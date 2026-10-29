@@ -1,0 +1,3127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Linda's Handmade · 手作毛線手札</title>
+
+  <!-- PWA 核心設定標籤 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#9B83A4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="毛線手札">
+  <link rel="apple-touch-icon" href="https://api.iconify.design/ph:yarn-fill.svg?color=%239b83a4&width=192&height=192">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- GSAP 核心庫與 Flip 動畫外掛 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Flip.min.js"></script>
+
+  <!-- Phosphor Icons (精緻質感圖示庫) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Google Fonts: 法式古典襯線體 Cormorant Garamond + 思源宋體 Noto Serif TC + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Serif+TC:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <script>
+    // 預先註冊圖片防破圖機制與 app 存根
+    const fallbackSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'><rect width='400' height='300' fill='%23E4DAE8'/><circle cx='200' cy='150' r='55' fill='%23CFBFD5' opacity='0.5'/><text x='50%25' y='52%25' font-family='sans-serif' font-size='14' fill='%23675271' text-anchor='middle'>Tung Handmade</text></svg>";
+    window.handleImgFallback = function(imgEl) {
+      if (!imgEl) return;
+      imgEl.onerror = null;
+      imgEl.src = fallbackSvg;
+    };
+    window.app = {
+      handleImgFallback: window.handleImgFallback
+    };
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            morandi: {
+              50: '#FAF8FA',
+              100: '#F3EEF5',
+              200: '#E4DAE8',
+              300: '#CFBFD5',
+              400: '#B59FBD',
+              500: '#9B83A4', // 主色：莫蘭迪煙燻柔紫
+              600: '#81698B',
+              700: '#675271',
+              800: '#4E3C56',
+              900: '#34263B',
+            },
+            oat: {
+              50: '#FAF7F2',
+              100: '#F3EDE4',
+              200: '#E6DCCF',
+              300: '#D5C5B5',
+              stone: '#433D46',
+            }
+          },
+          fontFamily: {
+            serifTitle: ['"Noto Serif TC"', '"Cormorant Garamond"', 'serif'],
+            serifBrand: ['"Cormorant Garamond"', '"Noto Serif TC"', 'serif'],
+            sans: ['Inter', '"Noto Serif TC"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --home-custom-bg: none;
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background-color: #E2DDD6;
+      color: #433D46;
+      font-family: 'Inter', "Noto Serif TC", sans-serif;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100dvh;
+      width: 100vw;
+    }
+
+    /* 墨水暈開動畫 (Ink Bleed) */
+    @keyframes ink-bleed {
+      0% { filter: blur(10px); opacity: 0; transform: scale(1.08); }
+      100% { filter: blur(0); opacity: 1; transform: scale(1); }
+    }
+    .ink-char {
+      display: inline-block;
+      animation: ink-bleed 2.2s cubic-bezier(0.3, 1, 0.4, 1) forwards;
+      opacity: 0;
+    }
+
+    /* 逐字彈跳 (Letter Bounce) */
+    @keyframes letter-bounce {
+      0% { transform: scale(1, 1) translateY(0); }
+      15% { transform: scale(1.2, 0.8) translateY(0); }
+      40% { transform: scale(0.8, 1.2) translateY(-12px); }
+      60% { transform: scale(1, 1) translateY(0); }
+      75% { transform: scale(1.1, 0.9) translateY(0); }
+      85% { transform: scale(0.95, 1.05) translateY(-4px); }
+      100% { transform: scale(1, 1) translateY(0); }
+    }
+    .bounce-char {
+      display: inline-block;
+      opacity: 0;
+      /* 先執行墨水淡入，隨後觸發彈跳 */
+      animation: ink-bleed 0.3s forwards, letter-bounce 0.8s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+    }
+
+    /* 勾織微幾何半透明底圖 */
+    .crochet-bg {
+      background-color: #FAF7F2;
+      background-image: 
+        var(--home-custom-bg),
+        radial-gradient(circle at 50% 50%, rgba(155, 131, 164, 0.05) 2px, transparent 2.5px),
+        radial-gradient(circle at 0% 100%, rgba(155, 131, 164, 0.04) 3px, transparent 3.5px),
+        radial-gradient(circle at 100% 0%, rgba(155, 131, 164, 0.04) 3px, transparent 3.5px);
+      background-size: cover, 24px 24px, 48px 48px, 48px 48px;
+      background-position: center;
+    }
+
+    /* 1x4 玻璃珠長條按鈕 */
+    .glass-bead-card {
+      background: rgba(255, 255, 255, 0.76);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.2px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px -4px rgba(103, 82, 113, 0.08),
+                  inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.95),
+                  inset 0 -2px 3px 0 rgba(155, 131, 164, 0.12);
+      border-radius: 26px;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background 0.22s;
+    }
+    .glass-bead-card:active {
+      transform: scale(0.975);
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    /* 柔性毛玻璃面板 */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+    }
+
+    /* 平滑無滾動條 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* 色彩選中光暈 */
+    .color-active-glow {
+      box-shadow: 0 0 0 2.5px #FFFFFF, 0 0 0 4.5px #9B83A4, 0 4px 10px rgba(155, 131, 164, 0.45);
+      transform: scale(1.15) !important;
+    }
+
+    /* 展開式浮動膠囊按鈕 */
+    .fab-expanding {
+      width: 48px;
+      height: 48px;
+      border-radius: 9999px;
+      transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+    }
+    .fab-expanding:hover, .fab-expanding:focus-within {
+      width: 136px;
+      box-shadow: 0 12px 28px -4px rgba(103, 82, 113, 0.38);
+    }
+    .fab-expanding .fab-icon {
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fab-expanding:hover .fab-icon {
+      transform: rotate(90deg);
+    }
+    .fab-expanding .fab-text {
+      max-width: 0;
+      opacity: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: max-width 0.4s ease, opacity 0.3s ease 0.12s;
+    }
+    .fab-expanding:hover .fab-text {
+      max-width: 85px;
+      opacity: 1;
+    }
+
+    /* 浮動標籤輸入框 */
+    .floating-field {
+      position: relative;
+      margin-top: 14px;
+    }
+    .floating-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #D5C5B5;
+      padding: 6px 0;
+      font-size: 13px;
+      color: #34263B;
+      outline: none;
+    }
+    .floating-label {
+      position: absolute;
+      left: 0;
+      top: 6px;
+      font-size: 13px;
+      color: #81698B;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .floating-input:focus ~ .floating-label,
+    .floating-input:not(:placeholder-shown) ~ .floating-label {
+      top: -14px;
+      font-size: 10px;
+      color: #9B83A4;
+      font-weight: 600;
+    }
+    .floating-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1.5px;
+      background: #9B83A4;
+      transform: scaleX(0);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-origin: center;
+    }
+    .floating-input:focus ~ .floating-line {
+      transform: scaleX(1);
+    }
+
+    /* 下拉選單展開 (Dropdown Reveal) 動態效果 */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+    .custom-dropdown-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      font-size: 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #E6DCCF;
+      color: #34263B;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .custom-dropdown-btn:focus, .custom-dropdown.active .custom-dropdown-btn {
+      border-color: #9B83A4;
+      box-shadow: 0 0 0 2px rgba(155, 131, 164, 0.2);
+    }
+    .custom-dropdown-arrow {
+      width: 14px;
+      height: 14px;
+      color: #81698B;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .custom-dropdown.active .custom-dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    .custom-dropdown-menu {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 5px);
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(230, 220, 207, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 12px 28px -6px rgba(103, 82, 113, 0.16);
+      overflow: hidden;
+      z-index: 60;
+      transform-origin: top;
+      transform: scaleY(0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.4s cubic-bezier(0.3, 1.3, 0.5, 1), opacity 0.3s ease;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .custom-dropdown.active .custom-dropdown-menu {
+      transform: scaleY(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .custom-dropdown-item {
+      padding: 8px 14px;
+      font-size: 12px;
+      color: #4E3C56;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: background 0.2s, color 0.2s, opacity 0.25s, transform 0.25s;
+    }
+    .custom-dropdown.active .custom-dropdown-item {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: calc(var(--i) * 0.05s);
+    }
+    .custom-dropdown-item:hover, .custom-dropdown-item.selected {
+      background: #F3EEF5;
+      color: #675271;
+      font-weight: 600;
+    }
+
+    .view-section {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background-color: transparent;
+      padding: 0.5rem 0.875rem 1.5rem 0.875rem; /* 修正底部過大的留白 */
+      touch-action: pan-y;
+    }
+
+    /* 織譜引導尺 */
+    .knitting-guide-ruler {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: rgba(155, 131, 164, 0.22);
+      border-top: 1.5px dashed #9B83A4;
+      border-bottom: 1.5px dashed #9B83A4;
+      cursor: ns-resize;
+      touch-action: none;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 12px;
+    }
+  </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen sm:p-2 p-0">
+
+  <!-- 面板容器：黃金適配 Galaxy Z Flip (22:9 長寬比，高 880px / 100dvh) -->
+  <div id="phoneFrame" class="relative w-full sm:max-w-[400px] h-[100dvh] sm:h-[880px] crochet-bg sm:rounded-[44px] shadow-2xl flex flex-col border border-morandi-200/90 overflow-hidden">
+    
+    <!-- 頂部精緻導航列 (Sticky 固定) -->
+    <header class="px-5 pt-3.5 pb-2.5 flex items-center justify-between z-30 shrink-0 bg-oat-50/95 backdrop-blur-md border-b border-morandi-100/80 sticky top-0">
+      <div class="flex items-center space-x-2">
+        <button id="navBackBtn" onclick="app.goHome()" class="hidden mr-1 text-morandi-600 active:scale-90 transition p-1" title="返回首頁">
+          <!-- 回上頁圖示保留簡約線條 SVG -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-base font-serifTitle tracking-widest font-semibold text-morandi-900 flex">
+          <!-- JS 動態生成墨水字元 -->
+        </h1>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <span id="brandTitle" class="text-[11px] font-serifBrand tracking-widest text-morandi-600 font-semibold uppercase flex">
+          <!-- JS 動態生成墨水字元 -->
+        </span>
+        <div class="w-1.5 h-1.5 rounded-full bg-morandi-400"></div>
+      </div>
+    </header>
+
+    <!-- 主頁面容器 (支援雙向左右滑動換頁) -->
+    <main id="mainContainer" class="flex-1 relative overflow-hidden no-scrollbar">
+      
+      <!-- ==================== 1. 入口頁面 (首頁) ==================== -->
+      <section id="viewHome" class="view-section flex flex-col z-10 !p-0">
+        
+        <!-- 專屬動態輪播櫥窗 (滿版橫向，置頂) -->
+        <div class="w-full h-64 sm:h-72 shrink-0 relative overflow-hidden shadow-sm rounded-b-[36px]">
+          <!-- object-bottom 保留靠下的人物特寫 -->
+          <img class="home-slide opacity-100 absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1N5EIl3Uq1G9BwpljZwWGpIvGIbU0BQoe" alt="櫥窗1">
+          <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1c5BsMpcJMaKBl4PJVpEp1wRtSzh_ThGs" alt="櫥窗2">
+          <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1nHRcSkZUYnfOjMUMOO7vGzSutOIwkdYY" alt="櫥窗3">
+          
+          <!-- 左下角 Linda 浮水印 -->
+          <div class="absolute bottom-4 left-5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-xl shadow-sm border border-white/30 pointer-events-none z-10">
+            <span class="text-xs text-white font-serifTitle tracking-widest font-semibold drop-shadow-md">Linda</span>
+          </div>
+        </div>
+
+        <!-- 下方按鈕 (置中縮排，營造留白高級感) -->
+        <div class="w-full max-w-[260px] mx-auto mt-6 flex flex-col space-y-3.5 pb-8 flex-1 justify-center">
+          <!-- (1) 毛線櫃 -->
+          <button onclick="app.navigate('yarns', 1)" class="glass-bead-card w-full h-[76px] px-5 flex items-center justify-between group">
+            <div class="flex items-center space-x-4">
+              <div class="w-11 h-11 p-2.5 rounded-[14px] bg-gradient-to-tr from-morandi-100 to-white flex items-center justify-center text-morandi-600 shadow-inner border border-white">
+                <i class="ph ph-yarn text-2xl"></i>
+              </div>
+              <div class="text-left">
+                <span class="text-[15px] font-serifTitle font-bold text-morandi-900 tracking-widest block">毛線櫃</span>
+                <span class="text-[9px] font-serifBrand italic text-morandi-400 tracking-wider">Yarn Cabinet</span>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-morandi-300 group-hover:text-morandi-600 transition group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+
+          <!-- (2) 織典 -->
+          <button onclick="app.navigate('library', 1)" class="glass-bead-card w-full h-[76px] px-5 flex items-center justify-between group">
+            <div class="flex items-center space-x-4">
+              <div class="w-11 h-11 p-2.5 rounded-[14px] bg-gradient-to-tr from-morandi-100 to-white flex items-center justify-center text-morandi-600 shadow-inner border border-white">
+                <i class="ph ph-book-bookmark text-2xl"></i>
+              </div>
+              <div class="text-left">
+                <span class="text-[15px] font-serifTitle font-bold text-morandi-900 tracking-widest block">織典</span>
+                <span class="text-[9px] font-serifBrand italic text-morandi-400 tracking-wider">Pattern Codex</span>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-morandi-300 group-hover:text-morandi-600 transition group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+
+          <!-- (3) 藝廊 -->
+          <button onclick="app.navigate('gallery', 1)" class="glass-bead-card w-full h-[76px] px-5 flex items-center justify-between group">
+            <div class="flex items-center space-x-4">
+              <div class="w-11 h-11 p-2.5 rounded-[14px] bg-gradient-to-tr from-morandi-100 to-white flex items-center justify-center text-morandi-600 shadow-inner border border-white">
+                <i class="ph ph-palette text-2xl"></i>
+              </div>
+              <div class="text-left">
+                <span class="text-[15px] font-serifTitle font-bold text-morandi-900 tracking-widest block">藝廊</span>
+                <span class="text-[9px] font-serifBrand italic text-morandi-400 tracking-wider">Atelier Gallery</span>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-morandi-300 group-hover:text-morandi-600 transition group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+
+          <!-- (4) 時光儀 -->
+          <button onclick="app.navigate('chronometer', 1)" class="glass-bead-card w-full h-[76px] px-5 flex items-center justify-between group">
+            <div class="flex items-center space-x-4">
+              <div class="w-11 h-11 p-2.5 rounded-[14px] bg-gradient-to-tr from-morandi-100 to-white flex items-center justify-center text-morandi-600 shadow-inner border border-white">
+                <i class="ph ph-hourglass text-2xl"></i>
+              </div>
+              <div class="text-left">
+                <span class="text-[15px] font-serifTitle font-bold text-morandi-900 tracking-widest block">時光儀</span>
+                <span class="text-[9px] font-serifBrand italic text-morandi-400 tracking-wider">Chronometer</span>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-morandi-300 group-hover:text-morandi-600 transition group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ==================== 2. 毛線櫃 View ==================== -->
+      <section id="viewYarns" class="view-section hidden flex-col gap-3.5 z-20">
+        <!-- 頂部圓餅圖 (支援左右滑動切換：顏色分佈 / 種類分佈) -->
+        <div class="relative w-full rounded-3xl glass-panel p-3.5 shadow-sm border border-morandi-200/80 overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span id="yarnChartTitle" class="text-xs font-serifTitle font-bold text-morandi-900">毛線庫存 · 顏色分佈</span>
+            <div class="flex items-center space-x-1">
+              <button onclick="app.switchYarnChart('color')" id="chartTab_color" class="px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-600 text-white font-semibold transition">顏色</button>
+              <button onclick="app.switchYarnChart('tag')" id="chartTab_tag" class="px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-100 text-morandi-700 transition">種類</button>
+            </div>
+          </div>
+          
+          <div id="yarnChartWrapper" class="flex items-center justify-between touch-pan-x cursor-grab py-1">
+            <div class="w-28 h-28 relative shrink-0 flex items-center justify-center">
+              <svg id="yarnPieSvg" class="w-full h-full -rotate-90" viewBox="0 0 36 36"></svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span id="chartCenterNum" class="text-sm font-serifBrand font-bold text-morandi-900 leading-none">0</span>
+                <span class="text-[8px] text-morandi-400">總球數</span>
+              </div>
+            </div>
+            <!-- 圖例與百分比清單 -->
+            <div id="yarnChartLegend" class="flex-1 pl-3.5 flex flex-col gap-1.5 justify-center overflow-hidden"></div>
+          </div>
+        </div>
+
+        <!-- 色系滑動篩選列 (放置於圓餅圖下方) -->
+        <div class="flex items-center justify-between gap-2 py-0.5">
+          <div class="flex-1 overflow-x-auto no-scrollbar flex items-center space-x-2.5 py-1.5 px-0.5" id="yarnColorFilterBar"></div>
+        </div>
+
+        <!-- 視圖切換列 -->
+        <div class="flex items-center justify-end px-1 py-0.5 border-b border-morandi-100/80">
+          <div class="flex items-center space-x-1 bg-white/85 p-0.5 rounded-xl border border-morandi-200/70">
+            <button onclick="app.setYarnLayout('list')" id="yarnLayoutBtn_list" class="w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition" title="列表視圖">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <button onclick="app.toggleYarnGridDensityMenu()" id="yarnLayoutBtn_grid" class="w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition relative" title="宮格視圖">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="yarnGridDensityMenu" class="hidden flex items-center justify-end space-x-1 px-1 py-1">
+          <span class="text-[10px] text-morandi-500 font-serifBrand mr-2">宮格密度:</span>
+          <button onclick="app.setYarnGridColumns(2)" class="yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-morandi-600 text-white font-bold">2×2</button>
+          <button onclick="app.setYarnGridColumns(3)" class="yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">3×3</button>
+          <button onclick="app.setYarnGridColumns(4)" class="yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">4×4</button>
+        </div>
+
+        <!-- 毛線細項清單 (觸發篩選時套用 Flip 平滑補位動畫) -->
+        <div id="yarnListContainer" class="flex flex-col gap-2.5 touch-pan-y relative min-h-[140px]"></div>
+      </section>
+
+      <!-- ==================== 3. 織典 View (原圖書館) ==================== -->
+      <section id="viewLibrary" class="view-section hidden flex-col gap-3 z-20">
+        <!-- 織典專屬工具列：防休眠 + 關鍵字放大鏡搜尋 + 視圖切換 (與藝廊相同配置) -->
+        <div class="flex items-center justify-between py-1 border-b border-morandi-100/80">
+          <div class="flex items-center space-x-2">
+            <button id="wakeLockBtn" onclick="app.toggleWakeLock()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-white/90 border border-morandi-200/70 text-xs font-medium text-morandi-700 shadow-sm active:scale-95 transition">
+              <span id="wakeLockDot" class="w-2 h-2 rounded-full bg-morandi-300"></span>
+              <span id="wakeLockLabel">看譜長亮</span>
+            </button>
+            <button onclick="app.togglePatternSearch()" class="flex items-center space-x-1 text-xs text-morandi-700 bg-white/80 px-2.5 py-1 rounded-xl border border-morandi-200/70 shadow-sm active:scale-95 transition">
+              <svg class="w-3.5 h-3.5 text-morandi-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+              <span class="font-serifTitle">搜尋織譜</span>
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-1 bg-white/85 p-0.5 rounded-xl border border-morandi-200/70">
+            <button onclick="app.setPatternLayout('list')" id="patLayoutBtn_list" class="w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition" title="列表視圖">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <button onclick="app.togglePatternGridDensityMenu()" id="patLayoutBtn_grid" class="w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition relative" title="宮格視圖">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 織典宮格密度選單 -->
+        <div id="patGridDensityMenu" class="hidden flex items-center justify-end space-x-1 px-1 py-1">
+          <span class="text-[10px] text-morandi-500 font-serifBrand mr-2">宮格密度:</span>
+          <button onclick="app.setPatternGridColumns(1)" class="pat-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">1欄</button>
+          <button onclick="app.setPatternGridColumns(2)" class="pat-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-morandi-600 text-white font-bold">2×2</button>
+          <button onclick="app.setPatternGridColumns(3)" class="pat-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">3×3</button>
+        </div>
+
+        <!-- 織典關鍵字搜尋列 -->
+        <div id="patternSearchDrawer" class="hidden transition-all duration-300">
+          <div class="relative">
+            <input type="text" id="patternSearchInput" oninput="app.onPatternSearchInput(this.value)" placeholder="輸入關鍵字或標籤..." class="w-full px-3.5 py-1.5 pl-8 text-xs rounded-2xl bg-white border border-morandi-200/90 shadow-inner focus:outline-none focus:ring-1 focus:ring-morandi-400">
+            <svg class="w-3.5 h-3.5 text-morandi-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+            <button onclick="app.clearPatternSearch()" class="absolute right-2.5 top-1.5 text-xs text-morandi-400 hover:text-morandi-700">✕</button>
+          </div>
+        </div>
+
+        <!-- 織譜卡片列表/宮格容器 -->
+        <div id="patternListContainer" class="flex flex-col gap-3 relative"></div>
+      </section>
+
+      <!-- ==================== 4. 藝廊 View ==================== -->
+      <section id="viewGallery" class="view-section hidden flex-col gap-3.5 z-20">
+        <div class="relative w-full h-56 rounded-3xl overflow-hidden shadow-sm bg-morandi-900/10 border border-morandi-200/80">
+          <div id="carouselWrapper" class="flex h-full w-max cursor-pointer"></div>
+        </div>
+
+        <div class="flex items-center justify-between px-1 py-1 border-b border-morandi-100/80">
+          <button onclick="app.toggleGallerySearch()" class="flex items-center space-x-1.5 text-xs text-morandi-700 bg-white/80 px-3 py-1 rounded-xl border border-morandi-200/70 shadow-sm active:scale-95 transition">
+            <svg class="w-3.5 h-3.5 text-morandi-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+            <span class="font-serifTitle">搜尋標籤</span>
+          </button>
+
+          <div class="flex items-center space-x-1 bg-white/85 p-0.5 rounded-xl border border-morandi-200/70">
+            <button onclick="app.setGalleryLayout('list')" id="layoutBtn_list" class="w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition" title="列表視圖">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <button onclick="app.toggleGridDensityMenu()" id="layoutBtn_grid" class="w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition relative" title="宮格視圖">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="gridDensityMenu" class="hidden flex items-center justify-end space-x-1 px-1 py-1">
+          <span class="text-[10px] text-morandi-500 font-serifBrand mr-2">宮格密度:</span>
+          <button onclick="app.setGridColumns(1)" class="density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">1欄</button>
+          <button onclick="app.setGridColumns(2)" class="density-btn px-2 py-0.5 text-[10px] rounded-lg bg-morandi-600 text-white font-bold">2×2</button>
+          <button onclick="app.setGridColumns(3)" class="density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">3×3</button>
+          <button onclick="app.setGridColumns(4)" class="density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">4×4</button>
+        </div>
+
+        <div id="gallerySearchDrawer" class="hidden transition-all duration-300">
+          <div class="relative">
+            <input type="text" id="galleryTagSearchInput" oninput="app.onGalleryTagSearchInput(this.value)" placeholder="輸入標籤，支援逗號多選：如 包包, 羊毛" class="w-full px-3.5 py-2 pl-8 text-xs rounded-2xl bg-white border border-morandi-200/90 shadow-inner focus:outline-none focus:ring-1 focus:ring-morandi-400">
+            <svg class="w-3.5 h-3.5 text-morandi-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+            <button onclick="app.clearGallerySearch()" class="absolute right-2.5 top-2 text-xs text-morandi-400 hover:text-morandi-700">✕</button>
+          </div>
+        </div>
+
+        <div id="galleryGroupedContainer" class="flex flex-col gap-4 pt-1 touch-pan-y relative"></div>
+      </section>
+
+      <!-- ==================== 5. 時光儀 View ==================== -->
+      <section id="viewChronometer" class="view-section hidden flex-col space-y-5 z-20">
+        <!-- (1) 數據儀表卡片：毛線庫存 / 織譜收集 / 作品典藏 -->
+        <div class="grid grid-cols-3 gap-2" id="statCardsGroup">
+          <div class="glass-panel p-2.5 rounded-2xl text-center shadow-sm relative overflow-hidden stat-card">
+            <span class="text-[9px] font-serifBrand tracking-wider text-morandi-500 block">毛線庫存</span>
+            <div class="text-sm font-serifTitle font-bold text-morandi-900 mt-0.5">
+              <span id="statYarnBalls" class="count-up">0</span> <span class="text-[9px] font-normal font-sans">球</span>
+            </div>
+            <svg class="w-full h-3 mt-1 sparkline-svg" viewBox="0 0 60 16">
+              <path class="sparkline-path" fill="none" stroke="#9B83A4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M 2,12 Q 15,4 30,9 T 58,3"/>
+            </svg>
+          </div>
+
+          <div class="glass-panel p-2.5 rounded-2xl text-center shadow-sm relative overflow-hidden stat-card">
+            <span class="text-[9px] font-serifBrand tracking-wider text-morandi-500 block">織譜收集</span>
+            <div class="text-sm font-serifTitle font-bold text-morandi-900 mt-0.5">
+              <span id="statPatternsCount" class="count-up">0</span> <span class="text-[9px] font-normal font-sans">份</span>
+            </div>
+            <svg class="w-full h-3 mt-1 sparkline-svg" viewBox="0 0 60 16">
+              <path class="sparkline-path" fill="none" stroke="#C28B88" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M 2,6 Q 20,14 35,5 T 58,10"/>
+            </svg>
+          </div>
+
+          <div class="glass-panel p-2.5 rounded-2xl text-center shadow-sm relative overflow-hidden stat-card">
+            <span class="text-[9px] font-serifBrand tracking-wider text-morandi-500 block">作品典藏</span>
+            <div class="text-sm font-serifTitle font-bold text-morandi-900 mt-0.5">
+              <span id="statProjectsCount" class="count-up">0</span> <span class="text-[9px] font-normal font-sans">件</span>
+            </div>
+            <svg class="w-full h-3 mt-1 sparkline-svg" viewBox="0 0 60 16">
+              <path class="sparkline-path" fill="none" stroke="#8A9A86" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M 2,14 Q 25,2 40,8 T 58,4"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- (2) 作品完成軌跡 - 原生感月曆檢視 -->
+        <div class="glass-panel rounded-3xl shadow-sm overflow-hidden flex flex-col border border-morandi-200/80">
+          <div class="px-3 py-2 flex items-center justify-between border-b border-morandi-100 bg-oat-100/60">
+            <button onclick="app.changeCalendarMonth(-1)" class="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-morandi-200 text-morandi-500 hover:text-morandi-800 transition active:scale-90">‹</button>
+            <span id="calendarMonthLabel" class="text-xs font-serifTitle font-bold text-morandi-900 tracking-widest">2024 年 10 月</span>
+            <button onclick="app.changeCalendarMonth(1)" class="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-morandi-200 text-morandi-500 hover:text-morandi-800 transition active:scale-90">›</button>
+          </div>
+          
+          <div class="p-2">
+            <div class="grid grid-cols-7 gap-1 text-center mb-1">
+              <div class="text-[9px] text-rose-400 font-serifTitle font-bold">日</div>
+              <div class="text-[9px] text-morandi-400 font-serifTitle">一</div>
+              <div class="text-[9px] text-morandi-400 font-serifTitle">二</div>
+              <div class="text-[9px] text-morandi-400 font-serifTitle">三</div>
+              <div class="text-[9px] text-morandi-400 font-serifTitle">四</div>
+              <div class="text-[9px] text-morandi-400 font-serifTitle">五</div>
+              <div class="text-[9px] text-morandi-400 font-serifTitle">六</div>
+            </div>
+            
+            <div id="calendarGrid" class="grid grid-cols-7 gap-px bg-morandi-100/50 rounded-xl overflow-hidden border border-morandi-100"></div>
+          </div>
+        </div>
+
+        <!-- (3) 智慧色彩與多選 Hashtag 雙抽屜檢索 -->
+        <div class="glass-panel p-3.5 rounded-3xl shadow-sm flex flex-col gap-3 border border-morandi-200/80">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-serifTitle font-bold text-morandi-900 tracking-wider">色彩與標籤檢索</span>
+            <button onclick="app.clearSearch()" class="text-morandi-500 hover:text-morandi-800 p-1" title="重置條件">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+          </div>
+
+          <div class="relative py-0.5">
+            <div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1 px-1" id="searchColorPills"></div>
+          </div>
+
+          <div class="flex flex-col gap-1.5 pt-0.5">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="searchYarnTagRow">
+              <span class="text-[10px] text-morandi-400 font-medium shrink-0">線材</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="searchProjectTagRow">
+              <span class="text-[10px] text-morandi-400 font-medium shrink-0">種類</span>
+            </div>
+          </div>
+
+          <div class="border-t border-morandi-100 pt-2.5 mt-0.5">
+            <div class="flex bg-morandi-100/70 p-1 rounded-2xl mb-2">
+              <button onclick="app.switchSearchTab('yarns')" id="searchTabYarnsBtn" class="flex-1 py-1 text-xs font-bold rounded-xl bg-white text-morandi-800 shadow-sm transition">符合毛線 (<span id="searchYarnCount">0</span>)</button>
+              <button onclick="app.switchSearchTab('projects')" id="searchTabProjectsBtn" class="flex-1 py-1 text-xs font-medium rounded-xl text-morandi-600 transition">符合作品 (<span id="searchProjectCount">0</span>)</button>
+            </div>
+
+            <div id="searchDrawerContent" class="flex flex-col gap-2 max-h-48 overflow-y-auto no-scrollbar relative"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 底層導航列 (4 大模組，使用 hidden 控制隱藏) -->
+    <nav id="bottomNavBar" class="shrink-0 bg-white/95 backdrop-blur-md border-t border-morandi-100 flex items-center justify-around py-2 px-3 z-40 relative hidden">
+      <button onclick="app.navigate('yarns')" id="tabBtn_yarns" class="flex flex-col items-center space-y-1 w-14 text-morandi-400 hover:text-morandi-700 transition">
+        <i class="ph ph-yarn text-xl mb-1"></i>
+        <span class="text-[9px] font-serifTitle">毛線</span>
+      </button>
+
+      <button onclick="app.navigate('library')" id="tabBtn_library" class="flex flex-col items-center space-y-1 w-14 text-morandi-400 hover:text-morandi-700 transition">
+        <i class="ph ph-book-bookmark text-xl mb-1"></i>
+        <span class="text-[9px] font-serifTitle">織典</span>
+      </button>
+
+      <button onclick="app.navigate('gallery')" id="tabBtn_gallery" class="flex flex-col items-center space-y-1 w-14 text-morandi-400 hover:text-morandi-700 transition">
+        <i class="ph ph-palette text-xl mb-1"></i>
+        <span class="text-[9px] font-serifTitle">藝廊</span>
+      </button>
+
+      <button onclick="app.navigate('chronometer')" id="tabBtn_chronometer" class="flex flex-col items-center space-y-1 w-14 text-morandi-400 hover:text-morandi-700 transition">
+        <i class="ph ph-hourglass text-xl mb-1"></i>
+        <span class="text-[9px] font-serifTitle">時光儀</span>
+      </button>
+    </nav>
+
+    <!-- 全域浮動新增按鈕 -->
+    <div id="globalFabContainer" class="absolute bottom-[66px] right-4 z-40 hidden">
+      <button id="globalFabBtn" onclick="app.handleGlobalFabClick()" class="fab-expanding bg-morandi-600 text-white flex items-center justify-center shadow-lg border border-white/40 cursor-pointer overflow-hidden p-3">
+        <span class="fab-icon shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        </span>
+        <span id="globalFabText" class="fab-text text-xs font-serifTitle font-semibold ml-2">新增</span>
+      </button>
+    </div>
+
+    <!-- 彈窗 1: 作品詳情故事卡 -->
+    <div id="modalProjectDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="w-full sm:max-w-[390px] max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+        <div class="relative h-64 shrink-0 bg-morandi-100">
+          <img id="detailImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="作品" class="w-full h-full object-cover" onerror="handleImgFallback(this)">
+          <button onclick="app.closeModal('modalProjectDetail')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-md active:scale-90">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span id="detailPurpose" class="px-2.5 py-0.5 rounded-full bg-morandi-100 text-morandi-800 text-[11px] font-medium font-serifTitle">自用</span>
+            <span id="detailDates" class="text-xs font-serifBrand text-morandi-500"></span>
+          </div>
+          <h2 id="detailTitle" class="text-lg font-serifTitle font-bold text-morandi-900">作品名稱</h2>
+          
+          <div>
+            <div id="detailColors" class="flex gap-2"></div>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 pt-0.5" id="detailTags"></div>
+
+          <div class="bg-white/80 p-3.5 rounded-2xl border border-morandi-200/60 mt-1">
+            <p id="detailNotes" class="text-xs text-morandi-800 leading-relaxed font-light whitespace-pre-wrap"></p>
+          </div>
+
+          <div class="flex gap-2 pt-2 border-t border-morandi-100">
+            <button onclick="app.editCurrentProject()" class="flex-1 py-2 text-xs font-serifTitle font-semibold rounded-xl bg-morandi-100 text-morandi-800 hover:bg-morandi-200">修改作品</button>
+            <button onclick="app.deleteCurrentProject()" class="px-4 py-2 text-xs font-serifTitle text-rose-500 hover:bg-rose-50 rounded-xl">刪除</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 彈窗 2: 毛線檔案室 -->
+    <div id="modalYarnDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="w-full sm:max-w-[390px] max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
+          <h3 class="text-sm font-serifTitle font-bold text-morandi-900">毛線檔案室</h3>
+          <button onclick="app.closeModal('modalYarnDetail')" class="text-morandi-400 hover:text-morandi-700">✕</button>
+        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3.5">
+          <div class="flex items-center space-x-3.5 bg-white p-3 rounded-2xl border border-morandi-100">
+            <img id="yarnDetailImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="w-16 h-16 rounded-xl object-cover border border-morandi-100" onerror="handleImgFallback(this)">
+            <div class="flex-1 min-w-0">
+              <span id="yarnDetailBrand" class="text-[10px] font-serifBrand text-morandi-400 tracking-wider">DARUMA</span>
+              <h4 id="yarnDetailName" class="text-sm font-bold text-morandi-900 truncate">線材名稱</h4>
+              <span id="yarnDetailLoc" class="text-[10px] text-morandi-500 bg-morandi-50 px-2 py-0.5 rounded-md mt-1 inline-block">存放地點：台南</span>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-xs text-morandi-700">色彩配置</span>
+            <div id="yarnDetailColors" class="flex gap-2 mt-1"></div>
+          </div>
+
+          <div>
+            <span class="text-xs text-morandi-700">種類標籤</span>
+            <div id="yarnDetailTags" class="flex flex-wrap gap-1.5 mt-1"></div>
+          </div>
+
+          <div class="flex gap-2 pt-3 border-t border-morandi-100">
+            <button onclick="app.openEditYarnForm()" class="flex-1 py-2.5 rounded-2xl bg-morandi-600 text-white font-serifTitle text-xs font-semibold shadow-md active:scale-98 transition">編輯資訊</button>
+            <button onclick="app.deleteCurrentYarn()" class="px-4 py-2.5 rounded-2xl text-rose-500 bg-white border border-rose-200 font-serifTitle text-xs font-semibold active:scale-98 transition">刪除線材</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 彈窗 3: 織譜放大燈箱 -->
+    <div id="modalPatternViewer" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col justify-between p-4">
+      <div class="flex items-center justify-between text-white py-2 px-2">
+        <div>
+          <h3 id="patternViewerTitle" class="text-sm font-serifTitle font-bold">織譜預覽</h3>
+          <span id="patternViewerMeta" class="text-[10px] text-stone-300"></span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="app.deleteCurrentPattern()" class="text-xs text-rose-300 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20">刪除織譜</button>
+          <button onclick="app.closeModal('modalPatternViewer')" class="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center">✕</button>
+        </div>
+      </div>
+
+      <div id="patternViewerContainer" class="flex-1 relative flex items-center justify-center overflow-hidden py-2">
+        <img id="patternViewerImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="織譜截圖" class="max-w-full max-h-full object-contain pointer-events-none select-none" onerror="handleImgFallback(this)">
+        <div id="knittingRuler" class="knitting-guide-ruler" style="top: 120px;">
+          <span class="text-[10px] font-mono text-white/90 bg-morandi-700/80 px-2 py-0.5 rounded shadow-sm">▲ 當前織行基準</span>
+        </div>
+      </div>
+
+      <div class="text-center py-1">
+        <span class="text-[10px] text-white/60">可上下滑動紫線引導當前編織行數</span>
+      </div>
+    </div>
+
+    <!-- 彈窗 4: 新增/編輯毛線 (套用動態自訂下拉選單) -->
+    <div id="modalAddYarn" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="w-full sm:max-w-[390px] max-h-[88vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
+          <h3 id="modalYarnTitle" class="text-sm font-serifTitle font-bold text-morandi-800">登錄毛線</h3>
+          <button onclick="app.closeModal('modalAddYarn')" class="text-morandi-400 hover:text-morandi-700">✕</button>
+        </div>
+        
+        <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3">
+          <input type="hidden" id="editYarnId" value="">
+
+          <div>
+            <div class="relative w-full h-32 rounded-2xl bg-morandi-100 overflow-hidden border border-dashed border-morandi-300 flex items-center justify-center">
+              <canvas id="yarnCanvas" class="w-full h-full object-cover cursor-crosshair"></canvas>
+              <div id="yarnUploadPrompt" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-morandi-400">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <span class="text-xs font-serifTitle">選擇照片 / 點擊照片滴管取色</span>
+              </div>
+              <input type="file" id="yarnFileInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="app.handleImageUpload(event, 'yarnCanvas')">
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-morandi-700">色調 (點擊圓點可刪除)</span>
+              <input type="color" id="yarnNativeColorPicker" class="w-5 h-5 rounded-full border-none cursor-pointer" onchange="app.addColorDot('yarn', this.value)">
+            </div>
+            <div id="yarnSelectedColors" class="flex flex-wrap gap-2 min-h-[32px] p-2 bg-white rounded-xl border border-morandi-100"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="floating-field">
+              <input type="text" id="yarnBrandInput" placeholder=" " class="floating-input">
+              <label class="floating-label font-serifTitle">品牌 (如 DARUMA)</label>
+              <div class="floating-line"></div>
+            </div>
+            <div class="floating-field">
+              <input type="text" id="yarnNameInput" placeholder=" " class="floating-input">
+              <label class="floating-label font-serifTitle">線材名稱</label>
+              <div class="floating-line"></div>
+            </div>
+          </div>
+
+          <div class="mt-2">
+            <span class="text-xs text-morandi-700">標籤 (點選切換 / 可自訂)</span>
+            <div class="flex flex-wrap gap-1.5 mt-1" id="yarnTypeSelectGroup"></div>
+            <div class="flex gap-2 mt-2">
+              <input type="text" id="newCustomTagInput" placeholder="自訂新標籤..." class="flex-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
+              <button type="button" onclick="app.addCustomYarnTag()" class="px-3 py-1 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium">+ 新增</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <div>
+              <span class="text-xs text-morandi-700">數量 (球)</span>
+              <div class="flex items-center mt-1 bg-white rounded-xl border border-morandi-200 overflow-hidden">
+                <button type="button" onclick="app.stepModalCount(-1)" class="px-3 py-1.5 text-morandi-600 font-bold">-</button>
+                <input type="number" id="yarnQuantityInput" value="2" class="w-full text-center text-xs py-1 focus:outline-none" min="1">
+                <button type="button" onclick="app.stepModalCount(1)" class="px-3 py-1.5 text-morandi-600 font-bold">+</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-xs text-morandi-700 mb-1 block">存放地點</span>
+              <!-- 自訂動態下拉選單 -->
+              <div id="yarnLocationDropdown" class="custom-dropdown">
+                <button type="button" class="custom-dropdown-btn">
+                  <span class="custom-dropdown-label">台南</span>
+                  <svg class="custom-dropdown-arrow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="custom-dropdown-menu">
+                  <div class="custom-dropdown-item selected" style="--i:0;" data-value="台南">台南</div>
+                  <div class="custom-dropdown-item" style="--i:1;" data-value="高雄">高雄</div>
+                  <div class="custom-dropdown-item" style="--i:2;" data-value="工作室">工作室</div>
+                </div>
+                <input type="hidden" id="yarnLocationInput" value="台南">
+              </div>
+            </div>
+          </div>
+
+          <button onclick="app.saveYarn()" class="w-full py-2.5 mt-2 rounded-2xl bg-morandi-600 text-white font-serifTitle font-semibold text-xs shadow-md active:scale-98 transition">確認儲存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 彈窗 5: 新增織譜 -->
+    <div id="modalAddPattern" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="w-full sm:max-w-[390px] max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
+          <h3 class="text-sm font-serifTitle font-bold text-morandi-800">典藏至織典</h3>
+          <button onclick="app.closeModal('modalAddPattern')" class="text-morandi-400 hover:text-morandi-700">✕</button>
+        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3">
+          <div class="floating-field">
+            <input type="text" id="patternNameInput" placeholder=" " class="floating-input">
+            <label class="floating-label font-serifTitle">織譜名稱</label>
+            <div class="floating-line"></div>
+          </div>
+
+          <div class="mt-2">
+            <span class="text-xs text-morandi-700">分類標籤 (點選切換 / 可自訂)</span>
+            <div class="flex flex-wrap gap-1.5 mt-1" id="patternTypeSelectGroup">
+              <!-- JS rendered -->
+            </div>
+            <div class="flex gap-2 mt-2">
+              <input type="text" id="newPatternTagInput" placeholder="自訂新標籤..." class="flex-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
+              <button type="button" onclick="app.addCustomPatternTag()" class="px-3 py-1 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium">+ 新增</button>
+            </div>
+          </div>
+
+          <div class="floating-field">
+            <input type="url" id="patternUrlInput" placeholder=" " class="floating-input">
+            <label class="floating-label font-serifTitle">來源連結 (https://...)</label>
+            <div class="floating-line"></div>
+          </div>
+
+          <div class="mt-2">
+            <span class="text-xs text-morandi-700">織譜截圖照片</span>
+            <input type="file" id="patternFileInput" accept="image/*" class="w-full mt-1 text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:bg-morandi-200 file:text-morandi-800" onchange="app.handlePatternImageUpload(event)">
+          </div>
+
+          <button onclick="app.saveNewPattern()" class="w-full py-2.5 mt-2 rounded-2xl bg-morandi-600 text-white font-serifTitle font-semibold text-xs shadow-md active:scale-98 transition">典藏至織典</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 彈窗 6: 新增/編輯作品 (套用動態自訂下拉選單) -->
+    <div id="modalAddProject" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="w-full sm:max-w-[390px] max-h-[88vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
+          <h3 id="modalProjectTitle" class="text-sm font-serifTitle font-bold text-morandi-800">記錄作品</h3>
+          <button onclick="app.closeModal('modalAddProject')" class="text-morandi-400 hover:text-morandi-700">✕</button>
+        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3">
+          <input type="hidden" id="editProjectId" value="">
+
+          <div>
+            <div class="relative w-full h-32 rounded-2xl bg-morandi-100 overflow-hidden border border-dashed border-morandi-300 flex items-center justify-center">
+              <canvas id="projectCanvas" class="w-full h-full object-cover cursor-crosshair"></canvas>
+              <div id="projectUploadPrompt" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-morandi-400">
+                <span class="text-xs font-serifTitle">選擇照片 / 點擊照片取色</span>
+              </div>
+              <input type="file" id="projectFileInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="app.handleImageUpload(event, 'projectCanvas')">
+            </div>
+            <div class="flex items-center justify-between mt-2">
+              <span class="text-xs text-morandi-700">主色調</span>
+              <input type="color" id="projectNativeColorPicker" class="w-5 h-5 rounded-full border-none cursor-pointer" onchange="app.addColorDot('project', this.value)">
+            </div>
+            <div id="projectSelectedColors" class="flex flex-wrap gap-2 min-h-[30px] p-2 bg-white rounded-xl border border-morandi-100 mt-1"></div>
+          </div>
+
+          <div class="floating-field">
+            <input type="text" id="projectNameInput" placeholder=" " class="floating-input">
+            <label class="floating-label font-serifTitle">作品名稱</label>
+            <div class="floating-line"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <div>
+              <span class="text-xs text-morandi-700">開始日期</span>
+              <input type="date" id="projectStartDate" class="w-full mt-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
+            </div>
+            <div>
+              <span class="text-xs text-morandi-700">完成日期</span>
+              <input type="date" id="projectEndDate" class="w-full mt-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <div>
+              <span class="text-xs text-morandi-700 mb-1 block">分類標籤</span>
+              <!-- 自訂動態下拉選單 -->
+              <div id="projectCategoryDropdown" class="custom-dropdown">
+                <button type="button" class="custom-dropdown-btn">
+                  <span class="custom-dropdown-label">包包</span>
+                  <svg class="custom-dropdown-arrow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="custom-dropdown-menu">
+                  <div class="custom-dropdown-item selected" style="--i:0;" data-value="包包">包包</div>
+                  <div class="custom-dropdown-item" style="--i:1;" data-value="娃娃">娃娃</div>
+                  <div class="custom-dropdown-item" style="--i:2;" data-value="小物">小物</div>
+                  <div class="custom-dropdown-item" style="--i:3;" data-value="吊飾">吊飾</div>
+                </div>
+                <input type="hidden" id="projectCategorySelect" value="包包">
+              </div>
+            </div>
+            <div>
+              <span class="text-xs text-morandi-700 mb-1 block">線材種類</span>
+              <!-- 自訂動態下拉選單 -->
+              <div id="projectYarnTagDropdown" class="custom-dropdown">
+                <button type="button" class="custom-dropdown-btn">
+                  <span class="custom-dropdown-label">羊毛</span>
+                  <svg class="custom-dropdown-arrow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="custom-dropdown-menu">
+                  <div class="custom-dropdown-item selected" style="--i:0;" data-value="羊毛">羊毛</div>
+                  <div class="custom-dropdown-item" style="--i:1;" data-value="棉線">棉線</div>
+                  <div class="custom-dropdown-item" style="--i:2;" data-value="漸層">漸層</div>
+                  <div class="custom-dropdown-item" style="--i:3;" data-value="金蔥">金蔥</div>
+                </div>
+                <input type="hidden" id="projectYarnTagSelect" value="羊毛">
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-1">
+            <span class="text-xs text-morandi-700">用途</span>
+            <div class="flex gap-4 mt-1">
+              <label class="flex items-center space-x-1.5 text-xs text-morandi-800">
+                <input type="radio" name="projectPurpose" value="自用" checked class="accent-morandi-600"> <span>自用</span>
+              </label>
+              <label class="flex items-center space-x-1.5 text-xs text-morandi-800">
+                <input type="radio" name="projectPurpose" value="送禮" class="accent-morandi-600"> <span>送禮</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="floating-field">
+            <textarea id="projectNotesInput" rows="2" placeholder=" " class="floating-input resize-none"></textarea>
+            <label class="floating-label font-serifTitle">編織心得筆記 (針法、鬆緊手感...)</label>
+            <div class="floating-line"></div>
+          </div>
+
+          <button onclick="app.saveProject()" class="w-full py-2.5 mt-2 rounded-2xl bg-morandi-600 text-white font-serifTitle font-semibold text-xs shadow-md active:scale-98 transition">確認典藏</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 柔和輕量通知訊息 (同步與儲存時專屬快閃小視窗) -->
+    <div id="toastMessage" class="fixed bottom-7 left-1/2 -translate-x-1/2 bg-morandi-900/95 text-white text-xs px-4 py-2 rounded-full shadow-lg backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 z-50 font-serifTitle flex items-center space-x-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span id="toastText">已儲存</span>
+    </div>
+
+  </div>
+
+  <!-- JavaScript 核心驅動 -->
+  <script>
+    function relDate(daysOffset) {
+      const d = new Date();
+      d.setDate(d.getDate() + daysOffset);
+      return d.toISOString().slice(0, 10);
+    }
+
+    // 7 大經典莫蘭迪色系基準
+    const pikminPalette = [
+      { id: 'all', color: '#9B83A4', isAll: true, name: '全部' },
+      { id: 'c_red', color: '#C28B88', name: '赤陶紅' },
+      { id: 'c_orange', color: '#D4A373', name: '暖杏橙' },
+      { id: 'c_green', color: '#8A9A86', name: '鼠尾草綠' },
+      { id: 'c_blue', color: '#849BB0', name: '冰川藍' },
+      { id: 'c_purple', color: '#9B83A4', name: '柔薰紫' },
+      { id: 'c_gray', color: '#55505A', name: '冷炭灰' },
+      { id: 'c_white', color: '#EBE7DF', name: '燕麥白' }
+    ];
+
+    const defaultYarns = [
+      { id: 'y1', brand: 'DARUMA', name: '柔軟細羊毛', colors: ['#9B83A4', '#C7B7CA'], tags: ['羊毛', '純色'], quantity: 4, location: '台南', image: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=500&q=80' },
+      { id: 'y2', brand: 'Hamanaka', name: '星光金蔥棉線', colors: ['#EBE7DF', '#D4A373'], tags: ['金蔥', '棉線'], quantity: 2, location: '高雄', image: 'https://images.unsplash.com/photo-1615715616181-79e5f5f4b50c?auto=format&fit=crop&w=500&q=80' },
+      { id: 'y3', brand: 'Scheepjes', name: '晨曦漸層蛋糕線', colors: ['#8A738F', '#BEA9C1', '#DFCEDF'], tags: ['漸層', '棉線'], quantity: 3, location: '台南', image: 'https://images.unsplash.com/photo-1582234372722-50d7ccc30ebd?auto=format&fit=crop&w=500&q=80' },
+      { id: 'y4', brand: 'Rowan', name: '輕柔幼羊駝', colors: ['#8A9A86', '#A2B5AB'], tags: ['羊毛', '純色'], quantity: 5, location: '高雄', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=500&q=80' },
+      { id: 'y5', brand: 'Isager', name: '赤陶微染棉麻', colors: ['#C28B88', '#D4A373'], tags: ['棉線', '純色'], quantity: 1, location: '台南', image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=500&q=80' },
+      { id: 'y6', brand: 'Puppy', name: '冰川藍銀絲絨', colors: ['#849BB0'], tags: ['金蔥', '羊毛'], quantity: 3, location: '台南', image: 'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&w=500&q=80' }
+    ];
+
+    const defaultPatterns = [
+      { id: 'p1', name: '法式復古鬱金香肩背包', tags: ['包包'], date: relDate(-12), url: 'https://www.youtube.com', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80' },
+      { id: 'p2', name: '莫蘭迪森林小兔吊飾', tags: ['娃娃', '吊飾'], date: relDate(-35), url: 'https://instagram.com', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80' }
+    ];
+
+    const defaultProjects = [
+      { id: 'prj1', title: '晨霧紫雲朵托特包', startDate: relDate(-20), endDate: relDate(+5), colors: ['#9B83A4', '#D2C6D8'], yarnTags: ['羊毛'], categoryTags: ['包包'], purpose: '自用', notes: '包口加了金屬磁扣，手感軟糯，背起來垂墜度很自然。', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=700&q=80' },
+      { id: 'prj2', title: '柔霧拿鐵編織杯墊組', startDate: relDate(-36), endDate: relDate(-10), colors: ['#D4A373', '#EBE7DF'], yarnTags: ['棉線'], categoryTags: ['小物'], purpose: '送禮', notes: '給朋友的入厝小禮物，鉤花平整收針很俐落。', image: 'https://images.unsplash.com/photo-1615715616181-79e5f5f4b50c?auto=format&fit=crop&w=700&q=80' },
+      { id: 'prj3', title: '靜謐薰衣草手提小方包', startDate: relDate(-12), endDate: relDate(+15), colors: ['#8A738F', '#A390A7'], yarnTags: ['漸層', '金蔥'], categoryTags: ['包包'], purpose: '自用', notes: '嘗試了雙線合股編織，挺括度非常理想！正在收尾。', image: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=700&q=80' },
+      { id: 'prj4', title: '森林鼠尾草小茶壺套', startDate: relDate(-55), endDate: relDate(-38), colors: ['#8A9A86', '#EBE7DF'], yarnTags: ['羊毛'], categoryTags: ['小物'], purpose: '自用', notes: '冬天泡熱茶專用，保溫效果絕佳。', image: 'https://images.unsplash.com/photo-1582234372722-50d7ccc30ebd?auto=format&fit=crop&w=700&q=80' },
+      { id: 'prj5', title: '奶油杏桃立體花手腕帶', startDate: relDate(-8), endDate: relDate(+18), colors: ['#D4A373', '#C28B88'], yarnTags: ['棉線'], categoryTags: ['吊飾'], purpose: '送禮', notes: '花瓣立體飽滿，送給小外甥女很喜歡。', image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=700&q=80' },
+      { id: 'prj6', title: '冰川藍麻花針感手套', startDate: relDate(-85), endDate: relDate(-60), colors: ['#849BB0', '#EBE7DF'], yarnTags: ['羊毛', '金蔥'], categoryTags: ['小物'], purpose: '自用', notes: '提早為深秋編織的保暖手套，指尖留孔方便滑手機。', image: 'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&w=700&q=80' },
+      { id: 'prj7', title: '落櫻粉針織相機揹帶', startDate: relDate(-120), endDate: relDate(-95), colors: ['#C28B88'], yarnTags: ['棉線'], categoryTags: ['小物'], purpose: '自用', notes: '承重力非常好，掛底片相機很有復古感。', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=700&q=80' }
+    ];
+
+    function hexToRgb(hex) {
+      let c = (hex || '#9B83A4').replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      const num = parseInt(c, 16) || 0;
+      return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      let max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      if (max !== min) {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: h * 360, s, l };
+    }
+
+    function getColorPikminScore(hex) {
+      const rgb = hexToRgb(hex);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      if (hsl.s < 0.15 || hsl.l < 0.15 || hsl.l > 0.88) return 1000 + hsl.l * 100;
+      return hsl.h;
+    }
+
+    /**
+     * 高靈敏度色彩判定：防止紅與橘、綠與紫/藍、黑色互串
+     */
+    function getColorCategory(hex) {
+      if (!hex) return 'c_purple';
+      const rgb = hexToRgb(hex);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+      // 1. 純黑、深炭灰
+      if (hsl.l <= 0.22) return 'c_gray';
+      // 2. 燕麥白、極淺米灰
+      if (hsl.l >= 0.86 || (hsl.s <= 0.12 && hsl.l >= 0.65)) return 'c_white';
+      // 3. 中性灰
+      if (hsl.s <= 0.14) return 'c_gray';
+
+      const h = hsl.h;
+      // 4. 赤陶紅 (345° ~ 15°)
+      if (h >= 345 || h < 18) return 'c_red';
+      // 5. 暖杏橙 (18° ~ 55°)
+      if (h >= 18 && h < 55) return 'c_orange';
+      // 6. 鼠尾草綠 (65° ~ 168°)
+      if (h >= 65 && h < 168) return 'c_green';
+      // 7. 冰川藍 (168° ~ 250°)
+      if (h >= 168 && h < 250) return 'c_blue';
+      // 8. 柔薰紫 (250° ~ 345°)
+      if (h >= 250 && h < 345) return 'c_purple';
+
+      return 'c_purple';
+    }
+
+    function isSimilarFamilyColor(itemHex, targetHex) {
+      if (!itemHex || !targetHex) return false;
+      const targetCat = getColorCategory(targetHex);
+      const itemCat = getColorCategory(itemHex);
+      return itemCat === targetCat;
+    }
+
+    class AppController {
+      constructor() {
+        this.yarns = this.loadLocal('tung_yarns', defaultYarns);
+        this.patterns = this.loadLocal('tung_patterns', defaultPatterns);
+        this.projects = this.loadLocal('tung_projects', defaultProjects);
+        // 設定您的 Google Apps Script Web App 網址
+        this.gasUrl = localStorage.getItem('tung_gas_url') || 'https://script.google.com/macros/s/AKfycbzUc9_wntXsWjB_lJr5Q3H0gFlW3cyK3c7kyaW-iSjcDZrB0KVDqzIS9hLMMzcKp_NS/exec';
+        this.isSyncing = false;
+
+        this.currentView = 'home';
+        this.viewOrder = ['yarns', 'library', 'gallery', 'chronometer'];
+        this.lastRenderedTitle = '';
+        this.selectedPikminColorId = 'all';
+        this.selectedPikminHex = null;
+
+        // 毛線櫃排版與圓餅圖狀態
+        this.yarnLayout = 'list';
+        this.yarnGridColumns = 2;
+        this.yarnChartType = 'color'; // 'color' | 'tag'
+
+        // 織典排版與搜尋
+        this.patternLayout = 'list';
+        this.patternGridColumns = 2;
+        this.patternSearchQuery = '';
+
+        // 藝廊排版
+        this.galleryLayout = 'grid';
+        this.gridColumns = 2;
+        this.gallerySearchQuery = '';
+
+        this.selectedSearchColors = new Set();
+        this.selectedYarnTags = new Set();
+        this.selectedProjectTags = new Set();
+        this.searchDrawerTab = 'yarns';
+        
+        this.calendarDate = new Date();
+        this.calendarDate.setDate(1);
+
+        this.wakeLock = null;
+        this.activeYarnId = null;
+        this.activeProjectId = null;
+        this.activePatternId = null;
+
+        this.tempColors = { yarn: [], project: [] };
+        this.customYarnTagPool = ['純色', '漸層', '金蔥', '羊毛', '棉線'];
+        this.customCategoryTagPool = ['包包', '娃娃', '小物', '吊飾']; // 織典與作品分類共用 Pool
+        this.tempUploadedImage = { yarn: null, project: null, pattern: null };
+      }
+
+      loadLocal(key, defaultVal) {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : [...defaultVal];
+        } catch (e) {
+          return [...defaultVal];
+        }
+      }
+
+      saveLocal(key, val) {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch (e) {
+          console.warn("無法寫入 LocalStorage:", e);
+        }
+      }
+
+      init() {
+        try {
+          this.renderInkText('pageTitle', '手札');
+          this.renderInkText('brandTitle', "LINDA'S HANDMADE");
+          this.renderAll();
+          this.initPikminFilterBar();
+          this.initSearchColors();
+          this.initDoubleRowTagSearch();
+          this.renderYarnTagSelectionGroup();
+          this.initKnittingRulerDrag();
+          this.initGalleryPinchZoom();
+          this.initYarnPinchZoom();
+          this.initCustomDropdowns();
+          this.initPageSwipeGestures();
+          this.initHomeCarousel();
+
+          // 自動從 Apps Script 雲端環境拉取最新資料庫
+          this.syncFromCloud(false);
+        } catch (e) {
+          console.error("初始化例外:", e);
+        }
+      }
+
+      // ==================== 首頁輪播牆 ====================
+      initHomeCarousel() {
+        const slides = document.querySelectorAll('.home-slide');
+        if (!slides.length) return;
+        let current = 0;
+        setInterval(() => {
+          slides[current].classList.remove('opacity-100');
+          slides[current].classList.add('opacity-0');
+          current = (current + 1) % slides.length;
+          slides[current].classList.remove('opacity-0');
+          slides[current].classList.add('opacity-100');
+        }, 3000); // 調整為 3 秒一張
+      }
+
+      // ==================== 下拉選單動畫元件 (Dropdown Reveal) ====================
+      initCustomDropdowns() {
+        document.querySelectorAll('.custom-dropdown').forEach(dd => {
+          const btn = dd.querySelector('.custom-dropdown-btn');
+          const label = dd.querySelector('.custom-dropdown-label');
+          const hiddenInput = dd.querySelector('input[type="hidden"]');
+          const items = dd.querySelectorAll('.custom-dropdown-item');
+
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const isActive = dd.classList.contains('active');
+            // 關閉其他已展開的選單
+            document.querySelectorAll('.custom-dropdown.active').forEach(other => {
+              if (other !== dd) other.classList.remove('active');
+            });
+            dd.classList.toggle('active', !isActive);
+          };
+
+          items.forEach((item, index) => {
+            item.style.setProperty('--i', index);
+            item.onclick = (e) => {
+              e.stopPropagation();
+              const val = item.getAttribute('data-value');
+              label.innerText = item.innerText;
+              if (hiddenInput) hiddenInput.value = val;
+              items.forEach(it => it.classList.remove('selected'));
+              item.classList.add('selected');
+              dd.classList.remove('active');
+            };
+          });
+        });
+
+        // 點擊空白處關閉選單
+        window.addEventListener('click', () => {
+          document.querySelectorAll('.custom-dropdown.active').forEach(dd => dd.classList.remove('active'));
+        });
+      }
+
+      // 動態更新下拉選單選項
+      populateDropdown(dropdownId, options, selectedValue) {
+        const dd = document.getElementById(dropdownId);
+        if (!dd) return;
+        const menu = dd.querySelector('.custom-dropdown-menu');
+        const hiddenInput = dd.querySelector('input[type="hidden"]');
+        const label = dd.querySelector('.custom-dropdown-label');
+        
+        let validVal = options.includes(selectedValue) ? selectedValue : options[0];
+        
+        menu.innerHTML = options.map((opt, i) => `
+          <div class="custom-dropdown-item ${opt === validVal ? 'selected' : ''}" style="--i:${i};" data-value="${opt}">${opt}</div>
+        `).join('');
+        
+        label.innerText = validVal;
+        if (hiddenInput) hiddenInput.value = validVal;
+        
+        // 重新綁定事件
+        const items = menu.querySelectorAll('.custom-dropdown-item');
+        items.forEach(item => {
+          item.onclick = (e) => {
+            e.stopPropagation();
+            const val = item.getAttribute('data-value');
+            label.innerText = item.innerText;
+            if (hiddenInput) hiddenInput.value = val;
+            items.forEach(it => it.classList.remove('selected'));
+            item.classList.add('selected');
+            dd.classList.remove('active');
+          };
+        });
+      }
+
+      setDropdownValue(dropdownId, value) {
+        const dd = document.getElementById(dropdownId);
+        if (!dd) return;
+        const label = dd.querySelector('.custom-dropdown-label');
+        const hiddenInput = dd.querySelector('input[type="hidden"]');
+        const items = dd.querySelectorAll('.custom-dropdown-item');
+        
+        let matched = false;
+        items.forEach(item => {
+          const val = item.getAttribute('data-value');
+          if (val === value) {
+            item.classList.add('selected');
+            label.innerText = item.innerText;
+            matched = true;
+          } else {
+            item.classList.remove('selected');
+          }
+        });
+        if (matched && hiddenInput) hiddenInput.value = value;
+      }
+
+      // ==================== 左右滑動切換分頁 (Swipe Navigation) ====================
+      initPageSwipeGestures() {
+        const main = document.getElementById('mainContainer');
+        if (!main) return;
+
+        let startX = 0, startY = 0, startTime = 0;
+        main.addEventListener('touchstart', (e) => {
+          if (this.currentView === 'home') return;
+          if (e.touches.length === 1) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            startTime = Date.now();
+          }
+        }, { passive: true });
+
+        main.addEventListener('touchend', (e) => {
+          if (this.currentView === 'home') return;
+          if (e.changedTouches.length === 1) {
+            const diffX = e.changedTouches[0].clientX - startX;
+            const diffY = e.changedTouches[0].clientY - startY;
+            const duration = Date.now() - startTime;
+
+            // 確保為水平滑動且速度夠快
+            if (Math.abs(diffX) > 55 && Math.abs(diffX) > Math.abs(diffY) * 1.5 && duration < 350) {
+              const curIdx = this.viewOrder.indexOf(this.currentView);
+              if (curIdx === -1) return;
+
+              if (diffX < 0 && curIdx < this.viewOrder.length - 1) {
+                // 向左滑動 => 下一頁 (由右往左推入)
+                this.navigate(this.viewOrder[curIdx + 1], 1);
+              } else if (diffX > 0 && curIdx > 0) {
+                // 向右滑動 => 上一頁 (由左往右推入)
+                this.navigate(this.viewOrder[curIdx - 1], -1);
+              }
+            }
+          }
+        }, { passive: true });
+      }
+
+      // ==================== 雲端後端通訊 ====================
+      isGasEnv() {
+        return typeof google !== 'undefined' && google.script && google.script.run;
+      }
+
+      showToast(text) {
+        const toast = document.getElementById('toastMessage');
+        const toastText = document.getElementById('toastText');
+        if (!toast || !toastText) return;
+        toastText.innerText = text;
+        toast.classList.remove('opacity-0', 'pointer-events-none');
+        setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 1600);
+      }
+
+      async syncFromCloud(showFeedback = true) {
+        this.isSyncing = true;
+        if (this.isGasEnv()) {
+          google.script.run
+            .withSuccessHandler((data) => {
+              this.applyCloudData(data, showFeedback);
+            })
+            .withFailureHandler((err) => {
+              console.warn("GAS 讀取失敗:", err);
+              this.isSyncing = false;
+            })
+            .getAppData();
+        } else if (this.gasUrl) {
+          // 當掛在 GitHub Pages 時，改用 HTTP API 讀取試算表
+          try {
+            const res = await fetch(`${this.gasUrl}?api=get_data`);
+            const json = await res.json();
+            if (json.status === 'success' && json.data) {
+              this.applyCloudData(json.data, showFeedback);
+            }
+          } catch (e) {
+            console.warn("雲端讀取例外:", e);
+          } finally {
+            this.isSyncing = false;
+          }
+        }
+      }
+
+      applyCloudData(data, showFeedback) {
+        if (!data) return;
+        if (data.yarns && data.yarns.length) {
+          this.yarns = data.yarns;
+          this.saveLocal('tung_yarns', this.yarns);
+        }
+        if (data.patterns && data.patterns.length) {
+          this.patterns = data.patterns;
+          this.saveLocal('tung_patterns', this.patterns);
+        }
+        if (data.projects && data.projects.length) {
+          this.projects = data.projects;
+          this.saveLocal('tung_projects', this.projects);
+        }
+        this.renderAll();
+        if (showFeedback) this.showToast('已同步最新資料');
+        this.isSyncing = false;
+      }
+
+      async dispatchCloudAction(action, payload) {
+        this.isSyncing = true;
+        if (this.isGasEnv()) {
+          google.script.run
+            .withSuccessHandler(() => {
+              this.isSyncing = false;
+              this.showToast('雲端已儲存');
+            })
+            .withFailureHandler((err) => {
+              console.warn("GAS 寫入失敗:", err);
+              this.isSyncing = false;
+            })
+            .apiDispatch(action, payload);
+        } else if (this.gasUrl) {
+          // 當掛在 GitHub Pages 時，使用 POST 將資料寫入試算表及雲端硬碟
+          try {
+            await fetch(this.gasUrl, {
+              method: 'POST',
+              mode: 'no-cors', // 避開跨網域限制
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action, ...payload })
+            });
+            this.showToast('雲端已儲存');
+          } catch (e) {
+            console.warn("雲端同步例外:", e);
+          } finally {
+            this.isSyncing = false;
+          }
+        } else {
+          this.isSyncing = false;
+        }
+      }
+
+      renderInkText(elId, text) {
+        if (this.lastRenderedTitle === text && elId === 'pageTitle') return;
+        const el = document.getElementById(elId);
+        if (!el) return;
+
+        if (elId === 'brandTitle') {
+          el.innerHTML = '';
+          // 墨水動畫跑完後，延遲 1s 開始逐字彈跳
+          setTimeout(() => {
+            el.innerHTML = text.split('').map((char, i) => 
+              `<span class="bounce-char" style="animation-delay: ${1 + i * 0.08}s">${char === ' ' ? '&nbsp;' : char}</span>`
+            ).join('');
+          }, 10);
+        } else {
+          el.innerHTML = text.split('').map((char, i) => 
+            `<span class="ink-char" style="animation-delay: ${i * 0.22}s">${char === ' ' ? '&nbsp;' : char}</span>`
+          ).join('');
+          if (elId === 'pageTitle') this.lastRenderedTitle = text;
+        }
+      }
+
+      handleImgFallback(imgEl) {
+        window.handleImgFallback(imgEl);
+      }
+
+      // ==================== 左右滑動進場轉場 (Slide Transition) ====================
+      navigate(viewName, direction = 0) {
+        if (this.currentView === viewName) return;
+        const oldView = this.currentView;
+        this.currentView = viewName;
+
+        const viewMap = {
+          home: 'viewHome',
+          yarns: 'viewYarns',
+          library: 'viewLibrary',
+          gallery: 'viewGallery',
+          chronometer: 'viewChronometer'
+        };
+
+        const oldEl = document.getElementById(viewMap[oldView]);
+        const newEl = document.getElementById(viewMap[viewName]);
+        if (!newEl) return;
+
+        newEl.classList.remove('hidden');
+
+        const backBtn = document.getElementById('navBackBtn');
+        const bottomNav = document.getElementById('bottomNavBar');
+
+        // 回到首頁 (特別清除子頁面遺留工具列)
+        if (viewName === 'home') {
+          if (backBtn) backBtn.classList.add('hidden');
+          if (bottomNav) {
+            gsap.to(bottomNav, { y: 20, opacity: 0, duration: 0.3, onComplete: () => bottomNav.classList.add('hidden') });
+          }
+          if (window.gsap && oldEl) {
+            // 與分頁相同流暢的滑動進場
+            gsap.to(oldEl, { xPercent: 100, duration: 0.38, ease: "power2.inOut", onComplete: () => { oldEl.classList.add('hidden'); gsap.set(oldEl, {clearProps: "all"}); } });
+            gsap.fromTo(newEl, { xPercent: -100 }, { xPercent: 0, duration: 0.38, ease: "power2.inOut" });
+          } else if (oldEl) {
+            oldEl.classList.add('hidden');
+          }
+        } else {
+          if (backBtn) backBtn.classList.remove('hidden');
+          if (bottomNav) {
+            bottomNav.classList.remove('hidden');
+            if (oldView === 'home') {
+               gsap.fromTo(bottomNav, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.38, ease: "power2.out" });
+            }
+          }
+          
+          if (window.gsap && oldEl) {
+            let dir = direction;
+            if (dir === 0) {
+              const oldIdx = this.viewOrder.indexOf(oldView);
+              const newIdx = this.viewOrder.indexOf(viewName);
+              dir = newIdx >= oldIdx ? 1 : -1;
+            }
+            if (oldView === 'home') dir = 1; // 從首頁進入，強制作往左推入
+            
+            gsap.to(oldEl, { xPercent: -100 * dir, duration: 0.38, ease: "power2.inOut", onComplete: () => { oldEl.classList.add('hidden'); gsap.set(oldEl, {clearProps: "all"}); } });
+            gsap.fromTo(newEl, { xPercent: 100 * dir }, { xPercent: 0, duration: 0.38, ease: "power2.inOut" });
+          } else if (oldEl) {
+            oldEl.classList.add('hidden');
+          }
+        }
+
+        // 更新底欄高亮
+        ['yarns', 'library', 'gallery', 'chronometer'].forEach(v => {
+          const btn = document.getElementById(`tabBtn_${v}`);
+          if (btn) {
+            btn.className = v === viewName 
+              ? 'flex flex-col items-center space-y-1 w-14 text-morandi-700 font-bold transition scale-110'
+              : 'flex flex-col items-center space-y-1 w-14 text-morandi-400 hover:text-morandi-700 transition';
+          }
+        });
+
+        const globalFab = document.getElementById('globalFabContainer');
+        const fabText = document.getElementById('globalFabText');
+
+        if (viewName === 'home') {
+          if (globalFab) globalFab.classList.add('hidden');
+          this.renderInkText('pageTitle', '手札');
+          // 每次回首頁觸發一次 Linda 彈跳動畫
+          this.renderInkText('brandTitle', "LINDA'S HANDMADE");
+        } else {
+          if (globalFab) globalFab.classList.remove('hidden');
+          
+          const titleMap = {
+            yarns: '毛線櫃',
+            library: '織典',
+            gallery: '藝廊',
+            chronometer: '時光儀'
+          };
+          this.renderInkText('pageTitle', titleMap[viewName] || '手札');
+
+          if (fabText) {
+            if (viewName === 'yarns') fabText.innerText = '新增線材';
+            if (viewName === 'library') fabText.innerText = '典藏織譜';
+            if (viewName === 'gallery') fabText.innerText = '記錄作品';
+            if (viewName === 'chronometer') globalFab.classList.add('hidden');
+          }
+        }
+
+        if (viewName === 'chronometer') {
+          this.animateChronometerEntrance();
+          this.renderCalendar();
+          this.executeSmartSearch();
+        } else if (viewName === 'gallery') {
+          this.renderGallery();
+        } else if (viewName === 'yarns') {
+          this.renderYarnCharts();
+          this.renderYarns(false); // 首次進入不使用跳動動畫
+        } else if (viewName === 'library') {
+          this.renderPatterns();
+        }
+      }
+
+      goHome() { this.navigate('home', -1); }
+
+      handleGlobalFabClick() {
+        if (this.currentView === 'yarns') {
+          this.tempUploadedImage.yarn = null;
+          document.getElementById('editYarnId').value = '';
+          document.getElementById('modalYarnTitle').innerText = '登錄毛線';
+          this.setDropdownValue('yarnLocationDropdown', '台南');
+          this.openModal('modalAddYarn');
+        }
+        if (this.currentView === 'library') {
+          this.tempUploadedImage.pattern = null;
+          this.renderPatternTagSelectionGroup();
+          this.openModal('modalAddPattern');
+        }
+        if (this.currentView === 'gallery') {
+          this.tempUploadedImage.project = null;
+          document.getElementById('editProjectId').value = '';
+          document.getElementById('modalProjectTitle').innerText = '記錄作品';
+          
+          // 動態生成藝廊下拉選單
+          this.populateDropdown('projectCategoryDropdown', this.customCategoryTagPool, '包包');
+          this.populateDropdown('projectYarnTagDropdown', this.customYarnTagPool, '羊毛');
+          
+          this.openModal('modalAddProject');
+        }
+      }
+
+      // ==================== 1. 毛線櫃 (含圓餅圖與 Flip 動態) ====================
+      switchYarnChart(type) {
+        this.yarnChartType = type;
+        const btnC = document.getElementById('chartTab_color');
+        const btnT = document.getElementById('chartTab_tag');
+        const title = document.getElementById('yarnChartTitle');
+
+        if (type === 'color') {
+          btnC.className = 'px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-600 text-white font-semibold transition';
+          btnT.className = 'px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-100 text-morandi-700 transition';
+          title.innerText = '毛線庫存 · 顏色分佈';
+        } else {
+          btnT.className = 'px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-600 text-white font-semibold transition';
+          btnC.className = 'px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-100 text-morandi-700 transition';
+          title.innerText = '毛線庫存 · 種類分佈';
+        }
+        this.renderYarnCharts();
+      }
+
+      renderYarnCharts() {
+        const svg = document.getElementById('yarnPieSvg');
+        const legend = document.getElementById('yarnChartLegend');
+        const centerNum = document.getElementById('chartCenterNum');
+        if (!svg || !legend) return;
+
+        const totalBalls = this.yarns.reduce((sum, y) => sum + (Number(y.quantity) || 1), 0);
+        if (centerNum) centerNum.innerText = totalBalls;
+
+        if (totalBalls === 0) {
+          svg.innerHTML = `<circle cx="18" cy="18" r="15.915" fill="none" stroke="#E4DAE8" stroke-width="3.8"/>`;
+          legend.innerHTML = `<span class="text-xs text-morandi-400">目前尚無庫存數據</span>`;
+          return;
+        }
+
+        let segments = [];
+        if (this.yarnChartType === 'color') {
+          // 依 7 大莫蘭迪色卡聚合
+          const colorCounts = {};
+          pikminPalette.filter(p => !p.isAll).forEach(p => colorCounts[p.id] = { name: p.name, color: p.color, count: 0 });
+
+          this.yarns.forEach(y => {
+            const hex = (y.colors && y.colors[0]) || '#9B83A4';
+            const cat = getColorCategory(hex);
+            if (colorCounts[cat]) colorCounts[cat].count += (Number(y.quantity) || 1);
+          });
+          segments = Object.values(colorCounts).filter(item => item.count > 0);
+        } else {
+          // 依種類標籤聚合
+          const tagCounts = {
+            '羊毛': { name: '羊毛', color: '#9B83A4', count: 0 },
+            '棉線': { name: '棉線', color: '#D4A373', count: 0 },
+            '漸層': { name: '漸層', color: '#8A9A86', count: 0 },
+            '金蔥': { name: '金蔥', color: '#C28B88', count: 0 },
+            '其他': { name: '其他', color: '#849BB0', count: 0 }
+          };
+          this.yarns.forEach(y => {
+            const firstTag = (y.tags && y.tags[0]) || '其他';
+            if (tagCounts[firstTag]) tagCounts[firstTag].count += (Number(y.quantity) || 1);
+            else tagCounts['其他'].count += (Number(y.quantity) || 1);
+          });
+          segments = Object.values(tagCounts).filter(item => item.count > 0);
+        }
+
+        // 繪製 SVG 甜甜圈圓餅圖
+        let strokeDashOffset = 0;
+        let svgHtml = '';
+        segments.forEach((seg) => {
+          const percent = (seg.count / totalBalls) * 100;
+          svgHtml += `
+            <circle cx="18" cy="18" r="15.915" fill="none" stroke="${seg.color}" stroke-width="3.8"
+              stroke-dasharray="${percent} ${100 - percent}"
+              stroke-dashoffset="${-strokeDashOffset}"
+              style="transition: stroke-dashoffset 0.6s ease, stroke-dasharray 0.6s ease;">
+            </circle>
+          `;
+          strokeDashOffset += percent;
+        });
+        svg.innerHTML = svgHtml;
+
+        // 渲染右側精簡標籤
+        legend.innerHTML = segments.slice(0, 4).map(seg => {
+          const pct = Math.round((seg.count / totalBalls) * 100);
+          return `
+            <div class="flex items-center justify-between text-xs font-serifTitle">
+              <div class="flex items-center space-x-1.5 truncate">
+                <span class="w-2 h-2 rounded-full shrink-0 shadow-sm" style="background-color: ${seg.color}"></span>
+                <span class="text-morandi-800 truncate">${seg.name}</span>
+              </div>
+              <span class="text-[10px] font-serifBrand text-morandi-500 font-semibold ml-2 shrink-0">${seg.count}球 (${pct}%)</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      setYarnLayout(mode) {
+        this.yarnLayout = mode;
+        const btnList = document.getElementById('yarnLayoutBtn_list');
+        const btnGrid = document.getElementById('yarnLayoutBtn_grid');
+        const menu = document.getElementById('yarnGridDensityMenu');
+
+        if (mode === 'list') {
+          if (btnList) btnList.className = 'w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition';
+          if (btnGrid) btnGrid.className = 'w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition';
+          if (menu) menu.classList.add('hidden');
+        } else {
+          if (btnGrid) btnGrid.className = 'w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition';
+          if (btnList) btnList.className = 'w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition';
+        }
+        this.renderYarns(true);
+      }
+
+      toggleYarnGridDensityMenu() {
+        if (this.yarnLayout !== 'grid') {
+          this.setYarnLayout('grid');
+          return;
+        }
+        const menu = document.getElementById('yarnGridDensityMenu');
+        if (menu) menu.classList.toggle('hidden');
+      }
+
+      setYarnGridColumns(cols) {
+        this.yarnGridColumns = cols;
+        document.querySelectorAll('.yarn-density-btn').forEach((btn, idx) => {
+          if (idx + 2 === cols) {
+            btn.className = 'yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-morandi-600 text-white font-bold';
+          } else {
+            btn.className = 'yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700';
+          }
+        });
+        this.renderYarns(true);
+      }
+
+      initYarnPinchZoom() {
+        const container = document.getElementById('yarnListContainer');
+        if (!container) return;
+        let initialDist = 0;
+        container.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 2 && this.yarnLayout === 'grid') {
+            initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          }
+        }, { passive: true });
+        container.addEventListener('touchmove', (e) => {
+          if (e.touches.length === 2 && initialDist > 0 && this.yarnLayout === 'grid') {
+            const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            const delta = currentDist - initialDist;
+            if (delta > 60) {
+              if (this.yarnGridColumns > 2) { this.setYarnGridColumns(this.yarnGridColumns - 1); initialDist = currentDist; }
+            } else if (delta < -60) {
+              if (this.yarnGridColumns < 4) { this.setYarnGridColumns(this.yarnGridColumns + 1); initialDist = currentDist; }
+            }
+          }
+        }, { passive: true });
+      }
+
+      initPikminFilterBar() {
+        const bar = document.getElementById('yarnColorFilterBar');
+        if (!bar) return;
+        bar.innerHTML = pikminPalette.map(item => {
+          if (item.isAll) {
+            return `
+              <button onclick="app.selectPikminColor('all')" id="pikminBtn_all" class="shrink-0 px-3 py-1 rounded-full text-xs font-serifTitle transition bg-morandi-600 text-white font-bold shadow-sm">
+                #全部
+              </button>
+            `;
+          }
+          return `
+            <button onclick="app.selectPikminColor('${item.id}', '${item.color}')" id="pikminBtn_${item.id}" class="shrink-0 w-6 h-6 rounded-full border-2 border-white shadow-sm transition active:scale-90 relative" style="background-color: ${item.color}" title="${item.name}">
+            </button>
+          `;
+        }).join('');
+      }
+
+      selectPikminColor(id, hex = null) {
+        this.selectedPikminColorId = id;
+        this.selectedPikminHex = hex;
+
+        pikminPalette.forEach(item => {
+          const btn = document.getElementById(`pikminBtn_${item.id}`);
+          if (!btn) return;
+          if (item.id === id) {
+            if (item.isAll) {
+              btn.className = 'shrink-0 px-3 py-1 rounded-full text-xs font-serifTitle transition bg-morandi-600 text-white font-bold shadow-sm';
+            } else {
+              btn.classList.add('color-active-glow');
+            }
+          } else {
+            if (item.isAll) {
+              btn.className = 'shrink-0 px-3 py-1 rounded-full text-xs font-serifTitle transition bg-white/90 text-morandi-700 border border-morandi-200';
+            } else {
+              btn.classList.remove('color-active-glow');
+            }
+          }
+        });
+
+        // 觸發分類篩選時套用 GSAP Flip 動畫
+        this.renderYarns(true);
+      }
+
+      renderYarns(useFlipAnimation = false) {
+        const container = document.getElementById('yarnListContainer');
+        if (!container) return;
+        
+        let list = [...this.yarns];
+        if (this.selectedPikminColorId !== 'all' && this.selectedPikminHex) {
+          list = list.filter(y => y.colors && y.colors.some(c => isSimilarFamilyColor(c, this.selectedPikminHex)));
+        }
+
+        list.sort((a, b) => getColorPikminScore(a.colors?.[0]) - getColorPikminScore(b.colors?.[0]));
+
+        if (!list.length) {
+          container.innerHTML = `<div class="text-xs text-morandi-400 py-12 text-center font-serifTitle w-full">此色彩尚無毛線收納</div>`;
+          return;
+        }
+
+        // 捕捉 GSAP Flip 狀態
+        let flipTargets = [];
+        if (useFlipAnimation && window.Flip) {
+          flipTargets = this.yarnLayout === 'list' 
+            ? Array.from(container.children) 
+            : (container.firstElementChild ? Array.from(container.firstElementChild.children) : []);
+        }
+        const flipState = (flipTargets.length > 0) ? Flip.getState(flipTargets) : null;
+        let htmlStr = '';
+
+        if (this.yarnLayout === 'list') {
+          htmlStr = list.map(y => `
+            <div data-flip-id="y_${y.id}" class="flip-item p-3 rounded-2xl glass-panel shadow-sm flex items-center justify-between cursor-pointer transition active:scale-[0.985] group w-full" onclick="app.openYarnDetail('${y.id}')">
+              <div class="flex items-center space-x-3 min-w-0">
+                <img src="${y.image}" alt="${y.name}" class="w-12 h-12 rounded-xl object-cover shrink-0 border border-morandi-100 shadow-sm" onerror="app.handleImgFallback(this)">
+                <div class="min-w-0 flex-1">
+                  <span class="text-[9px] font-serifBrand text-morandi-400 tracking-wider block uppercase">${y.brand}</span>
+                  <h4 class="text-xs font-serifTitle font-bold text-morandi-900 truncate">${y.name}</h4>
+                  <div class="flex items-center space-x-1.5 mt-1">
+                    <div class="flex -space-x-1">
+                      ${(y.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full border border-white inline-block shadow-sm" style="background-color: ${c}"></span>`).join('')}
+                    </div>
+                    <div class="flex gap-1 overflow-hidden">
+                      ${(y.tags || []).slice(0, 2).map(t => `<span class="text-[9px] text-morandi-500">#${t}</span>`).join('')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="shrink-0 pl-2">
+                <span class="text-xs font-serifBrand font-semibold px-2.5 py-1 rounded-full bg-morandi-100/90 text-morandi-800 border border-morandi-200/50 shadow-sm">${y.quantity} 球</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          const gridClassMap = { 2: 'grid grid-cols-2 gap-2.5', 3: 'grid grid-cols-3 gap-1.5', 4: 'grid grid-cols-4 gap-1' };
+          const gridClass = gridClassMap[this.yarnGridColumns] || 'grid grid-cols-2 gap-2.5';
+          
+          htmlStr = `<div class="${gridClass} w-full">` + list.map(y => `
+            <div data-flip-id="y_${y.id}" class="flip-item glass-panel rounded-2xl overflow-hidden shadow-sm cursor-pointer transition active:scale-[0.98] group flex flex-col w-full" onclick="app.openYarnDetail('${y.id}')">
+              <div class="aspect-square bg-morandi-100 overflow-hidden relative">
+                <img src="${y.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="app.handleImgFallback(this)">
+                <div class="absolute bottom-1 right-1 bg-white/80 backdrop-blur-md px-1.5 py-0.5 rounded text-[8px] font-bold text-morandi-800">${y.quantity}球</div>
+              </div>
+              ${this.yarnGridColumns <= 2 ? `
+              <div class="p-2">
+                <h4 class="text-[10px] font-serifTitle font-bold text-morandi-900 truncate">${y.name}</h4>
+                <div class="flex items-center space-x-1 mt-1">
+                  ${(y.colors || []).map(c => `<span class="w-2 h-2 rounded-full border border-black/10 inline-block" style="background-color: ${c}"></span>`).join('')}
+                </div>
+              </div>` : ''}
+            </div>
+          `).join('') + `</div>`;
+        }
+        
+        container.innerHTML = htmlStr;
+
+        // 作品篩選重排 (Filterable Grid) 動態效果：約 0.6 秒
+        if (useFlipAnimation && window.Flip && flipState && container.children.length > 0) {
+          const newTargets = this.yarnLayout === 'list' 
+            ? Array.from(container.children) 
+            : Array.from(container.firstElementChild.children);
+          
+          Flip.from(flipState, {
+            targets: newTargets,
+            duration: 0.6,
+            ease: "power2.out",
+            absolute: true,
+            onEnter: elements => gsap.fromTo(elements, { opacity: 0, scale: 0.75 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }),
+            onLeave: elements => gsap.to(elements, { opacity: 0, scale: 0.6, duration: 0.35, ease: "power2.in" })
+          });
+        }
+      }
+
+      openYarnDetail(id) {
+        this.activeYarnId = id;
+        const yarn = this.yarns.find(y => y.id === id);
+        if (!yarn) return;
+
+        const imgEl = document.getElementById('yarnDetailImg');
+        if (imgEl) imgEl.src = yarn.image;
+        document.getElementById('yarnDetailBrand').innerText = yarn.brand;
+        document.getElementById('yarnDetailName').innerText = yarn.name;
+        document.getElementById('yarnDetailLoc').innerText = `存放地點：${yarn.location || '工作室'}`;
+
+        const colorsEl = document.getElementById('yarnDetailColors');
+        if (colorsEl) {
+          colorsEl.innerHTML = (yarn.colors || []).map(c => `<span class="w-5 h-5 rounded-full border border-black/10 shadow-inner" style="background-color: ${c}"></span>`).join('');
+        }
+
+        const tagsEl = document.getElementById('yarnDetailTags');
+        if (tagsEl) {
+          tagsEl.innerHTML = (yarn.tags || []).map(t => `<span class="px-2 py-0.5 rounded-lg bg-morandi-100 text-morandi-700 text-xs">#${t}</span>`).join('');
+        }
+
+        this.openModal('modalYarnDetail');
+      }
+
+      openEditYarnForm() {
+        const yarn = this.yarns.find(y => y.id === this.activeYarnId);
+        if (!yarn) return;
+
+        this.closeModal('modalYarnDetail');
+        document.getElementById('modalYarnTitle').innerText = '編輯毛線';
+        document.getElementById('editYarnId').value = yarn.id;
+        document.getElementById('yarnBrandInput').value = yarn.brand;
+        document.getElementById('yarnNameInput').value = yarn.name;
+        document.getElementById('yarnQuantityInput').value = yarn.quantity;
+        this.setDropdownValue('yarnLocationDropdown', yarn.location || '台南');
+        this.tempColors.yarn = [...(yarn.colors || [])];
+        this.tempUploadedImage.yarn = yarn.image;
+        this.renderTempColorDots('yarn');
+
+        this.renderYarnTagSelectionGroup(yarn.tags);
+        this.openModal('modalAddYarn');
+      }
+
+      renderYarnTagSelectionGroup(activeTags = []) {
+        const container = document.getElementById('yarnTypeSelectGroup');
+        if (!container) return;
+        container.innerHTML = this.customYarnTagPool.map(t => {
+          const isActive = activeTags.includes(t);
+          return `
+            <button type="button" onclick="app.toggleSelectTag(this)" class="tag-btn px-2.5 py-1 text-xs rounded-xl transition ${isActive ? 'bg-morandi-600 text-white font-bold' : 'bg-morandi-100 text-morandi-700'}">${t}</button>
+          `;
+        }).join('');
+      }
+
+      addCustomYarnTag() {
+        const input = document.getElementById('newCustomTagInput');
+        if (!input) return;
+        const tag = input.value.trim();
+        if (tag && !this.customYarnTagPool.includes(tag)) {
+          this.customYarnTagPool.push(tag);
+          this.renderYarnTagSelectionGroup();
+          input.value = '';
+          this.showToast(`已新增標籤 #${tag}`);
+        }
+      }
+
+      deleteCurrentYarn() {
+        const targetId = this.activeYarnId;
+        this.yarns = this.yarns.filter(y => y.id !== targetId);
+        this.saveLocal('tung_yarns', this.yarns);
+        this.closeModal('modalYarnDetail');
+        this.renderYarns(false);
+        this.renderYarnCharts();
+        this.updateStats();
+        this.showToast('毛線已刪除');
+        this.dispatchCloudAction('deleteYarn', { id: targetId });
+      }
+
+      // ==================== 2. 織典 (原圖書館) ====================
+      
+      // 動態渲染織譜可自訂分類標籤
+      renderPatternTagSelectionGroup(activeTags = []) {
+        const container = document.getElementById('patternTypeSelectGroup');
+        if (!container) return;
+        container.innerHTML = this.customCategoryTagPool.map(t => {
+          const isActive = activeTags.includes(t);
+          return `<button type="button" onclick="app.toggleSelectTag(this)" class="tag-btn px-2.5 py-1 text-xs rounded-xl transition ${isActive ? 'bg-morandi-600 text-white font-bold' : 'bg-morandi-100 text-morandi-700'}">${t}</button>`;
+        }).join('');
+      }
+
+      addCustomPatternTag() {
+        const input = document.getElementById('newPatternTagInput');
+        if (!input) return;
+        const tag = input.value.trim();
+        if (tag && !this.customCategoryTagPool.includes(tag)) {
+          this.customCategoryTagPool.push(tag);
+          this.renderPatternTagSelectionGroup([tag]); // 自動選中新標籤
+          input.value = '';
+          this.showToast(`已新增標籤 #${tag}`);
+        }
+      }
+
+      setPatternLayout(mode) {
+        this.patternLayout = mode;
+        const btnList = document.getElementById('patLayoutBtn_list');
+        const btnGrid = document.getElementById('patLayoutBtn_grid');
+        const menu = document.getElementById('patGridDensityMenu');
+
+        if (mode === 'list') {
+          if (btnList) btnList.className = 'w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition';
+          if (btnGrid) btnGrid.className = 'w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition';
+          if (menu) menu.classList.add('hidden');
+        } else {
+          if (btnGrid) btnGrid.className = 'w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition';
+          if (btnList) btnList.className = 'w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition';
+        }
+        this.renderPatterns();
+      }
+
+      togglePatternGridDensityMenu() {
+        if (this.patternLayout !== 'grid') {
+          this.setPatternLayout('grid');
+          return;
+        }
+        const menu = document.getElementById('patGridDensityMenu');
+        if (menu) menu.classList.toggle('hidden');
+      }
+
+      setPatternGridColumns(cols) {
+        this.patternGridColumns = cols;
+        document.querySelectorAll('.pat-density-btn').forEach((btn, idx) => {
+          if (idx + 1 === cols) {
+            btn.className = 'pat-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-morandi-600 text-white font-bold';
+          } else {
+            btn.className = 'pat-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700';
+          }
+        });
+        this.renderPatterns();
+      }
+
+      togglePatternSearch() {
+        const drawer = document.getElementById('patternSearchDrawer');
+        if (!drawer) return;
+        drawer.classList.toggle('hidden');
+        if (!drawer.classList.contains('hidden')) {
+          const input = document.getElementById('patternSearchInput');
+          if (input) input.focus();
+        }
+      }
+
+      onPatternSearchInput(val) {
+        this.patternSearchQuery = val;
+        this.renderPatterns();
+      }
+
+      clearPatternSearch() {
+        this.patternSearchQuery = '';
+        const input = document.getElementById('patternSearchInput');
+        if (input) input.value = '';
+        this.renderPatterns();
+      }
+
+      renderPatterns() {
+        const container = document.getElementById('patternListContainer');
+        if (!container) return;
+
+        let list = [...this.patterns];
+        const q = (this.patternSearchQuery || '').trim().toLowerCase();
+        if (q) {
+          list = list.filter(p => p.name.toLowerCase().includes(q) || (p.tags || []).some(t => t.toLowerCase().includes(q)));
+        }
+
+        if (!list.length) {
+          container.innerHTML = `<div class="text-xs text-morandi-400 py-12 text-center font-serifTitle w-full">查無符合織譜</div>`;
+          return;
+        }
+
+        if (this.patternLayout === 'list') {
+          container.className = 'flex flex-col gap-3 relative';
+          container.innerHTML = list.map(p => `
+            <div onclick="app.openPatternLightbox('${p.id}')" class="rounded-3xl glass-panel shadow-sm overflow-hidden p-3.5 flex flex-col gap-2.5 cursor-pointer active:scale-[0.99] transition">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-serifTitle font-bold text-morandi-900">${p.name}</h4>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <span class="text-[10px] font-serifBrand text-morandi-400">${p.date}</span>
+                    ${(p.tags || []).map(t => `<span class="text-[10px] text-morandi-600 bg-morandi-100 px-2 py-0.5 rounded-full">#${t}</span>`).join('')}
+                  </div>
+                </div>
+                ${p.url ? `<a href="${p.url}" target="_blank" onclick="event.stopPropagation()" class="w-6 h-6 rounded-full bg-morandi-100 flex items-center justify-center text-morandi-600">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>` : ''}
+              </div>
+
+              <div class="relative w-full h-44 rounded-2xl overflow-hidden bg-morandi-100 border border-morandi-200/50">
+                <img src="${p.image}" alt="織譜" class="w-full h-full object-cover" onerror="app.handleImgFallback(this)">
+                <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-lg bg-black/45 backdrop-blur-md text-[9px] text-white">點擊進入檢視</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          const gridClassMap = { 1: 'grid grid-cols-1 gap-3', 2: 'grid grid-cols-2 gap-2.5', 3: 'grid grid-cols-3 gap-1.5' };
+          container.className = `${gridClassMap[this.patternGridColumns] || 'grid grid-cols-2 gap-2.5'} relative`;
+          container.innerHTML = list.map(p => `
+            <div onclick="app.openPatternLightbox('${p.id}')" class="glass-panel rounded-2xl overflow-hidden shadow-sm cursor-pointer transition active:scale-[0.98] group flex flex-col">
+              <div class="aspect-square bg-morandi-100 overflow-hidden relative">
+                <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="app.handleImgFallback(this)">
+              </div>
+              <div class="p-2">
+                <h4 class="text-[10px] font-serifTitle font-bold text-morandi-900 truncate">${p.name}</h4>
+                <div class="flex items-center space-x-1 mt-0.5">
+                  <span class="text-[8px] text-morandi-400 font-serifBrand truncate">${(p.tags && p.tags[0]) || '織譜'}</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      openPatternLightbox(id) {
+        this.activePatternId = id;
+        const p = this.patterns.find(item => item.id === id);
+        if (!p) return;
+
+        document.getElementById('patternViewerTitle').innerText = p.name;
+        document.getElementById('patternViewerMeta').innerText = `${p.date} · ${(p.tags || []).join(' ')}`;
+        const imgEl = document.getElementById('patternViewerImg');
+        if (imgEl) imgEl.src = p.image;
+        this.openModal('modalPatternViewer');
+      }
+
+      deleteCurrentPattern() {
+        const targetId = this.activePatternId;
+        this.patterns = this.patterns.filter(p => p.id !== targetId);
+        this.saveLocal('tung_patterns', this.patterns);
+        this.closeModal('modalPatternViewer');
+        this.renderPatterns();
+        this.updateStats();
+        this.showToast('織譜已刪除');
+        this.dispatchCloudAction('deletePattern', { id: targetId });
+      }
+
+      initKnittingRulerDrag() {
+        const ruler = document.getElementById('knittingRuler');
+        const container = document.getElementById('patternViewerContainer');
+        if (!ruler || !container) return;
+
+        let isDragging = false;
+        const onDown = () => { isDragging = true; ruler.style.transition = 'none'; };
+        const onMove = (e) => {
+          if (!isDragging) return;
+          const rect = container.getBoundingClientRect();
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          let top = clientY - rect.top;
+          top = Math.max(10, Math.min(top, rect.height - 40));
+          ruler.style.top = `${top}px`;
+        };
+        const onUp = () => { isDragging = false; };
+
+        ruler.addEventListener('mousedown', onDown);
+        ruler.addEventListener('touchstart', onDown);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove);
+        window.addEventListener('mouseup', onUp);
+        window.addEventListener('touchend', onUp);
+      }
+
+      async toggleWakeLock() {
+        const label = document.getElementById('wakeLockLabel');
+        const dot = document.getElementById('wakeLockDot');
+        if (!this.wakeLock) {
+          try {
+            if ('wakeLock' in navigator) {
+              this.wakeLock = await navigator.wakeLock.request('screen');
+              if (label) label.innerText = '長亮中';
+              if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+              this.showToast('已開啟螢幕防休眠');
+              this.wakeLock.addEventListener('release', () => {
+                this.wakeLock = null;
+                if (label) label.innerText = '看譜長亮';
+                if (dot) dot.className = 'w-2 h-2 rounded-full bg-morandi-300';
+              });
+            } else {
+              this.showToast('看譜模式啟動');
+            }
+          } catch (e) {
+            this.showToast('看譜模式就緒');
+          }
+        } else {
+          try { this.wakeLock.release(); } catch(e){}
+          this.wakeLock = null;
+          if (label) label.innerText = '看譜長亮';
+          if (dot) dot.className = 'w-2 h-2 rounded-full bg-morandi-300';
+          this.showToast('已關閉防休眠');
+        }
+      }
+
+      // ==================== 3. 藝廊 ====================
+      setGalleryLayout(mode) {
+        this.galleryLayout = mode;
+        const btnList = document.getElementById('layoutBtn_list');
+        const btnGrid = document.getElementById('layoutBtn_grid');
+        const menu = document.getElementById('gridDensityMenu');
+
+        if (mode === 'list') {
+          if (btnList) btnList.className = 'w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition';
+          if (btnGrid) btnGrid.className = 'w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition';
+          if (menu) menu.classList.add('hidden');
+        } else {
+          if (btnGrid) btnGrid.className = 'w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition';
+          if (btnList) btnList.className = 'w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition';
+        }
+        this.renderGallery();
+      }
+
+      toggleGridDensityMenu() {
+        if (this.galleryLayout !== 'grid') {
+          this.setGalleryLayout('grid');
+          return;
+        }
+        const menu = document.getElementById('gridDensityMenu');
+        if (menu) menu.classList.toggle('hidden');
+      }
+
+      setGridColumns(cols) {
+        this.gridColumns = cols;
+        document.querySelectorAll('.density-btn').forEach((btn, idx) => {
+          if (idx + 1 === cols) {
+            btn.className = 'density-btn px-2 py-0.5 text-[10px] rounded-lg bg-morandi-600 text-white font-bold';
+          } else {
+            btn.className = 'density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700';
+          }
+        });
+        this.renderGallery();
+      }
+
+      initGalleryPinchZoom() {
+        const container = document.getElementById('galleryGroupedContainer');
+        if (!container) return;
+
+        let initialDist = 0;
+        container.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 2) {
+            initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          }
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+          if (e.touches.length === 2 && initialDist > 0) {
+            const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            const delta = currentDist - initialDist;
+            if (delta > 60) {
+              if (this.gridColumns > 1) {
+                this.setGridColumns(this.gridColumns - 1);
+                initialDist = currentDist;
+                this.showToast(`宮格視圖: ${this.gridColumns} 欄`);
+              }
+            } else if (delta < -60) {
+              if (this.gridColumns < 4) {
+                this.setGridColumns(this.gridColumns + 1);
+                initialDist = currentDist;
+                this.showToast(`宮格視圖: ${this.gridColumns} 欄`);
+              }
+            }
+          }
+        }, { passive: true });
+      }
+
+      toggleGallerySearch() {
+        const drawer = document.getElementById('gallerySearchDrawer');
+        if (!drawer) return;
+        drawer.classList.toggle('hidden');
+        if (!drawer.classList.contains('hidden')) {
+          const input = document.getElementById('galleryTagSearchInput');
+          if (input) input.focus();
+        }
+      }
+
+      onGalleryTagSearchInput(val) {
+        this.gallerySearchQuery = val;
+        this.renderGallery();
+      }
+
+      clearGallerySearch() {
+        this.gallerySearchQuery = '';
+        const input = document.getElementById('galleryTagSearchInput');
+        if (input) input.value = '';
+        this.renderGallery();
+      }
+
+      // 藝廊取消閃爍進場動畫，維持絲滑純淨渲染
+      renderGallery() {
+        const container = document.getElementById('galleryGroupedContainer');
+        if (!container) return;
+        
+        const rawQuery = (this.gallerySearchQuery || '').trim();
+        let list = [...this.projects];
+        
+        if (rawQuery) {
+          const terms = rawQuery.split(/[,，]+/).map(t => t.trim().toLowerCase()).filter(Boolean);
+          list = list.filter(p => {
+            const haystack = [
+              p.title,
+              p.purpose,
+              ...(p.yarnTags || []),
+              ...(p.categoryTags || []),
+              p.notes
+            ].join(' ').toLowerCase();
+            return terms.every(term => haystack.includes(term));
+          });
+        }
+
+        list.sort((a, b) => new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate));
+
+        if (!list.length) {
+          container.innerHTML = `<div class="text-xs text-morandi-400 py-12 text-center font-serifTitle">查無符合作品</div>`;
+          return;
+        }
+
+        const monthGroups = {};
+        list.forEach(p => {
+          const dateObj = new Date(p.endDate || p.startDate);
+          const key = `${dateObj.getFullYear()} 年 ${dateObj.getMonth() + 1} 月`;
+          if (!monthGroups[key]) monthGroups[key] = [];
+          monthGroups[key].push(p);
+        });
+
+        let html = '';
+        Object.keys(monthGroups).forEach(monthLabel => {
+          const groupItems = monthGroups[monthLabel];
+          html += `
+            <div class="flex flex-col gap-2 w-full">
+              <div class="flex items-baseline justify-between px-1">
+                <h3 class="text-xs font-serifTitle font-bold text-morandi-900 tracking-wider">${monthLabel}</h3>
+                <span class="text-[10px] text-morandi-400 font-serifBrand">${groupItems.length} 件作品</span>
+              </div>
+          `;
+
+          if (this.galleryLayout === 'list') {
+            html += `<div class="flex flex-col gap-3 w-full">`;
+            html += groupItems.map(p => `
+              <div data-flip-id="p_${p.id}" onclick="app.openProjectDetail('${p.id}')" class="flip-item glass-panel rounded-2xl overflow-hidden shadow-sm cursor-pointer transition active:scale-[0.985] group w-full">
+                <div class="h-44 bg-morandi-100 overflow-hidden">
+                  <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="app.handleImgFallback(this)">
+                </div>
+                <div class="p-3 flex items-center justify-between">
+                  <div>
+                    <h4 class="text-xs font-serifTitle font-bold text-morandi-900">${p.title}</h4>
+                    <span class="text-[10px] font-serifBrand text-morandi-400">${p.startDate} ~ ${p.endDate}</span>
+                  </div>
+                  <div class="flex items-center space-x-1">
+                    ${(p.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full inline-block shadow-inner" style="background-color: ${c}"></span>`).join('')}
+                  </div>
+                </div>
+              </div>
+            `).join('');
+            html += `</div>`;
+          } else {
+            const gridClassMap = {
+              1: 'grid grid-cols-1 gap-3',
+              2: 'grid grid-cols-2 gap-2.5',
+              3: 'grid grid-cols-3 gap-1.5',
+              4: 'grid grid-cols-4 gap-1'
+            };
+            const gridClass = gridClassMap[this.gridColumns] || 'grid grid-cols-2 gap-2.5';
+
+            html += `<div class="${gridClass}">`;
+            html += groupItems.map(p => {
+              if (this.gridColumns >= 3) {
+                return `
+                  <div data-flip-id="p_${p.id}" onclick="app.openProjectDetail('${p.id}')" class="flip-item aspect-square rounded-xl overflow-hidden bg-morandi-100 shadow-sm cursor-pointer active:scale-95 transition relative group w-full">
+                    <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="app.handleImgFallback(this)">
+                  </div>
+                `;
+              } else if (this.gridColumns === 1) {
+                return `
+                  <div data-flip-id="p_${p.id}" onclick="app.openProjectDetail('${p.id}')" class="flip-item glass-panel rounded-2xl overflow-hidden shadow-sm cursor-pointer transition active:scale-[0.98] group w-full">
+                    <div class="h-52 bg-morandi-100 overflow-hidden">
+                      <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="app.handleImgFallback(this)">
+                    </div>
+                    <div class="p-3">
+                      <h4 class="text-sm font-serifTitle font-bold text-morandi-900">${p.title}</h4>
+                      <p class="text-xs text-morandi-500 line-clamp-1 mt-0.5">${p.notes || ''}</p>
+                    </div>
+                  </div>
+                `;
+              } else {
+                return `
+                  <div data-flip-id="p_${p.id}" onclick="app.openProjectDetail('${p.id}')" class="flip-item glass-panel rounded-2xl overflow-hidden shadow-sm cursor-pointer transition active:scale-[0.98] group w-full">
+                    <div class="w-full h-36 bg-morandi-100 overflow-hidden relative">
+                      <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="app.handleImgFallback(this)">
+                    </div>
+                    <div class="p-2.5">
+                      <h4 class="text-xs font-serifTitle font-bold text-morandi-900 truncate">${p.title}</h4>
+                      <div class="flex items-center space-x-1 mt-1.5">
+                        ${(p.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full border border-black/10 inline-block shadow-inner" style="background-color: ${c}"></span>`).join('')}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }
+            }).join('');
+            html += `</div>`;
+          }
+
+          html += `</div>`;
+        });
+
+        container.innerHTML = html;
+        this.renderCarousel();
+      }
+
+      renderCarousel() {
+        if (!this.projects || !this.projects.length) return;
+        const wrapper = document.getElementById('carouselWrapper');
+        if (!wrapper) return;
+
+        wrapper.innerHTML = this.projects.map((p) => `
+          <div class="w-[300px] h-full shrink-0 relative px-1 pb-1 pt-1" onclick="app.openProjectDetail('${p.id}')">
+            <div class="w-full h-full rounded-2xl overflow-hidden relative shadow-sm border border-morandi-200/50 group">
+              <img src="${p.image}" alt="作品" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 pointer-events-none" onerror="handleImgFallback(this)">
+              <div class="absolute inset-0 bg-gradient-to-t from-morandi-950/75 via-transparent to-transparent pointer-events-none"></div>
+              <div class="absolute bottom-4 left-4 right-4 text-white pointer-events-none">
+                <span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-medium tracking-wide">#${(p.categoryTags && p.categoryTags[0]) || '編織'}</span>
+                <h3 class="text-base font-serifTitle tracking-wide mt-1 drop-shadow-sm truncate">${p.title}</h3>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        if (this.carouselTween) this.carouselTween.kill();
+        const totalWidth = wrapper.scrollWidth;
+        const viewWidth = wrapper.parentElement.clientWidth;
+        
+        if (totalWidth > viewWidth && window.gsap) {
+          this.carouselTween = gsap.to(wrapper, {
+            x: -(totalWidth - viewWidth),
+            duration: this.projects.length * 3, // 調整至 3 秒一張
+            ease: "none",
+            repeat: -1,
+            yoyo: true
+          });
+          wrapper.onmouseenter = () => this.carouselTween.pause();
+          wrapper.onmouseleave = () => this.carouselTween.play();
+          wrapper.ontouchstart = () => this.carouselTween.pause();
+          wrapper.ontouchend = () => this.carouselTween.play();
+        }
+      }
+
+      openProjectDetail(id) {
+        this.activeProjectId = id;
+        const p = this.projects.find(item => item.id === id);
+        if (!p) return;
+
+        const imgEl = document.getElementById('detailImg');
+        if (imgEl) imgEl.src = p.image;
+        document.getElementById('detailTitle').innerText = p.title;
+        document.getElementById('detailPurpose').innerText = p.purpose || '自用';
+        document.getElementById('detailDates').innerText = `${p.startDate} ~ ${p.endDate}`;
+        document.getElementById('detailNotes').innerText = p.notes || '尚無編織心情紀錄。';
+
+        const tagsContainer = document.getElementById('detailTags');
+        if (tagsContainer) {
+          tagsContainer.innerHTML = [
+            ...(p.yarnTags || []).map(t => `<span class="px-2 py-0.5 rounded-xl bg-morandi-100 text-morandi-700 text-[10px]">#${t}</span>`),
+            ...(p.categoryTags || []).map(t => `<span class="px-2 py-0.5 rounded-xl bg-morandi-100 text-morandi-700 text-[10px]">#${t}</span>`)
+          ].join('');
+        }
+
+        const colorsContainer = document.getElementById('detailColors');
+        if (colorsContainer) {
+          colorsContainer.innerHTML = (p.colors || []).map(c => `
+            <span class="w-5 h-5 rounded-full border border-black/10 inline-block shadow-inner" style="background-color: ${c}"></span>
+          `).join('');
+        }
+
+        this.openModal('modalProjectDetail');
+      }
+
+      editCurrentProject() {
+        const p = this.projects.find(item => item.id === this.activeProjectId);
+        if (!p) return;
+
+        this.closeModal('modalProjectDetail');
+        document.getElementById('modalProjectTitle').innerText = '修改作品';
+        document.getElementById('editProjectId').value = p.id;
+        document.getElementById('projectNameInput').value = p.title;
+        document.getElementById('projectStartDate').value = p.startDate;
+        document.getElementById('projectEndDate').value = p.endDate;
+        document.getElementById('projectNotesInput').value = p.notes || '';
+        
+        this.populateDropdown('projectCategoryDropdown', this.customCategoryTagPool, (p.categoryTags && p.categoryTags[0]) || '包包');
+        this.populateDropdown('projectYarnTagDropdown', this.customYarnTagPool, (p.yarnTags && p.yarnTags[0]) || '羊毛');
+
+        const purposeRadios = document.getElementsByName('projectPurpose');
+        purposeRadios.forEach(r => r.checked = (r.value === p.purpose));
+
+        this.tempColors.project = [...(p.colors || [])];
+        this.tempUploadedImage.project = p.image;
+        this.renderTempColorDots('project');
+        this.openModal('modalAddProject');
+      }
+
+      deleteCurrentProject() {
+        const targetId = this.activeProjectId;
+        this.projects = this.projects.filter(p => p.id !== targetId);
+        this.saveLocal('tung_projects', this.projects);
+        this.closeModal('modalProjectDetail');
+        this.renderGallery();
+        this.updateStats();
+        this.showToast('作品已刪除');
+        this.dispatchCloudAction('deleteProject', { id: targetId });
+      }
+
+      // ==================== 4. 時光儀 (取消閃爍動效，更新三張小卡) ====================
+      animateChronometerEntrance() {
+        this.updateStats();
+      }
+
+      updateStats() {
+        const totalBalls = this.yarns.reduce((sum, y) => sum + (Number(y.quantity) || 0), 0);
+        const totalPatterns = this.patterns.length;
+        const totalProjects = this.projects.length; 
+
+        const elBalls = document.getElementById('statYarnBalls');
+        const elPatterns = document.getElementById('statPatternsCount');
+        const elProjects = document.getElementById('statProjectsCount');
+        if (elBalls) elBalls.innerText = totalBalls;
+        if (elPatterns) elPatterns.innerText = totalPatterns;
+        if (elProjects) elProjects.innerText = totalProjects;
+      }
+
+      changeCalendarMonth(delta) {
+        this.calendarDate.setMonth(this.calendarDate.getMonth() + delta);
+        this.renderCalendar();
+      }
+
+      renderCalendar() {
+        const container = document.getElementById('calendarGrid');
+        const label = document.getElementById('calendarMonthLabel');
+        if (!container || !label) return;
+
+        const year = this.calendarDate.getFullYear();
+        const month = this.calendarDate.getMonth();
+        
+        label.innerText = `${year} 年 ${month + 1} 月`;
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        const startOffset = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+
+        let html = '';
+
+        for (let i = 0; i < startOffset; i++) {
+          html += `<div class="bg-oat-50/40 h-16 border-b border-r border-morandi-100/30"></div>`;
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const currentDate = new Date(year, month, d);
+          const currentStr = currentDate.toISOString().slice(0, 10);
+          const isToday = currentStr === new Date().toISOString().slice(0, 10);
+
+          const activeProjects = this.projects.filter(p => p.startDate <= currentStr && p.endDate >= currentStr);
+          const endingProjects = activeProjects.filter(p => p.endDate === currentStr);
+
+          html += `<div class="bg-white h-16 border-b border-r border-morandi-100/50 p-1 flex flex-col relative overflow-hidden transition ${activeProjects.length > 0 ? 'hover:bg-morandi-50/50' : ''}">`;
+          
+          html += `<span class="text-[10px] font-serifBrand ${isToday ? 'bg-morandi-600 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold mb-0.5' : 'text-morandi-600 mb-0.5'}">${d}</span>`;
+          
+          if (activeProjects.length > 0) {
+            html += `<div class="flex flex-col gap-0.5 mt-0.5">`;
+            activeProjects.forEach(p => {
+              html += `<div class="h-1.5 w-full rounded-sm shadow-sm" style="background-color: ${p.colors[0] || '#9B83A4'}"></div>`;
+            });
+            html += `</div>`;
+          }
+
+          if (endingProjects.length > 0) {
+            html += `<div class="absolute bottom-1 right-1 flex -space-x-2">`;
+            endingProjects.forEach(p => {
+              html += `<img src="${p.image}" class="w-6 h-6 rounded-md object-cover border-2 border-white shadow-sm cursor-pointer active:scale-90 transition z-10 hover:z-20" onclick="app.openProjectDetail('${p.id}')" onerror="app.handleImgFallback(this)" title="${p.title}">`;
+            });
+            html += `</div>`;
+          }
+
+          html += `</div>`;
+        }
+
+        const totalCells = startOffset + daysInMonth;
+        const remainder = totalCells % 7;
+        if (remainder > 0) {
+          const fillCount = 7 - remainder;
+          for (let i = 0; i < fillCount; i++) {
+            html += `<div class="bg-oat-50/40 h-16 border-b border-r border-morandi-100/30"></div>`;
+          }
+        }
+
+        container.innerHTML = html;
+      }
+
+      initSearchColors() {
+        const container = document.getElementById('searchColorPills');
+        if (!container) return;
+
+        const paletteColors = pikminPalette.filter(p => !p.isAll);
+        container.innerHTML = paletteColors.map(c => `
+          <button onclick="app.selectSearchColor('${c.color}')" data-color="${c.color}" class="dock-item shrink-0 w-7 h-7 rounded-full border-2 border-white shadow-sm flex items-center justify-center transition active:scale-90 relative" style="background-color: ${c.color}">
+            <span class="check-mark text-white text-[11px] font-bold hidden">✓</span>
+          </button>
+        `).join('');
+      }
+
+      selectSearchColor(hex) {
+        if (this.selectedSearchColors.has(hex)) {
+          this.selectedSearchColors.delete(hex);
+        } else {
+          this.selectedSearchColors.add(hex);
+        }
+        
+        document.querySelectorAll('.dock-item').forEach(btn => {
+          const color = btn.getAttribute('data-color');
+          const check = btn.querySelector('.check-mark');
+          if (this.selectedSearchColors.has(color)) {
+            btn.classList.add('color-active-glow');
+            if (check) check.classList.remove('hidden');
+          } else {
+            btn.classList.remove('color-active-glow');
+            if (check) check.classList.add('hidden');
+          }
+        });
+        this.executeSmartSearch();
+      }
+
+      initDoubleRowTagSearch() {
+        const yarnTags = ['羊毛', '棉線', '金蔥', '漸層'];
+        const projectTags = ['包包', '娃娃', '小物', '吊飾'];
+
+        const row1 = document.getElementById('searchYarnTagRow');
+        if (row1) {
+          yarnTags.forEach(t => {
+            const btn = document.createElement('button');
+            btn.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0';
+            btn.innerText = `#${t}`;
+            btn.onclick = () => this.toggleSearchYarnTag(t, btn);
+            row1.appendChild(btn);
+          });
+        }
+
+        const row2 = document.getElementById('searchProjectTagRow');
+        if (row2) {
+          projectTags.forEach(t => {
+            const btn = document.createElement('button');
+            btn.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0';
+            btn.innerText = `#${t}`;
+            btn.onclick = () => this.toggleSearchProjectTag(t, btn);
+            row2.appendChild(btn);
+          });
+        }
+      }
+
+      toggleSearchYarnTag(tag, btn) {
+        if (this.selectedYarnTags.has(tag)) {
+          this.selectedYarnTags.delete(tag);
+          btn.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0';
+        } else {
+          this.selectedYarnTags.add(tag);
+          btn.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-600 text-white font-bold transition shrink-0';
+        }
+        this.executeSmartSearch();
+      }
+
+      toggleSearchProjectTag(tag, btn) {
+        if (this.selectedProjectTags.has(tag)) {
+          this.selectedProjectTags.delete(tag);
+          btn.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0';
+        } else {
+          this.selectedProjectTags.add(tag);
+          btn.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-600 text-white font-bold transition shrink-0';
+        }
+        this.executeSmartSearch();
+      }
+
+      clearSearch() {
+        this.selectedSearchColors.clear();
+        this.selectedYarnTags.clear();
+        this.selectedProjectTags.clear();
+
+        document.querySelectorAll('.dock-item').forEach(b => {
+          b.classList.remove('color-active-glow');
+          const check = b.querySelector('.check-mark');
+          if (check) check.classList.add('hidden');
+        });
+        document.querySelectorAll('.search-yarn-tag').forEach(b => b.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0');
+        document.querySelectorAll('.search-proj-tag').forEach(b => b.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0');
+        
+        this.executeSmartSearch();
+        this.showToast('已重置檢索條件');
+      }
+
+      switchSearchTab(tab) {
+        this.searchDrawerTab = tab;
+        const btnYarns = document.getElementById('searchTabYarnsBtn');
+        const btnProjects = document.getElementById('searchTabProjectsBtn');
+
+        if (tab === 'yarns') {
+          if (btnYarns) btnYarns.className = 'flex-1 py-1 text-xs font-bold rounded-xl bg-white text-morandi-800 shadow-sm transition';
+          if (btnProjects) btnProjects.className = 'flex-1 py-1 text-xs font-medium rounded-xl text-morandi-600 transition';
+        } else {
+          if (btnProjects) btnProjects.className = 'flex-1 py-1 text-xs font-bold rounded-xl bg-white text-morandi-800 shadow-sm transition';
+          if (btnYarns) btnYarns.className = 'flex-1 py-1 text-xs font-medium rounded-xl text-morandi-600 transition';
+        }
+        this.renderSearchDrawerResults();
+      }
+
+      executeSmartSearch() {
+        const hasColors = this.selectedSearchColors.size > 0;
+        const hasYarnTags = this.selectedYarnTags.size > 0;
+        const hasProjTags = this.selectedProjectTags.size > 0;
+
+        this.filteredYarns = this.yarns.filter(y => {
+          const matchColor = hasColors ? Array.from(this.selectedSearchColors).some(selectedHex => 
+            (y.colors || []).some(c => isSimilarFamilyColor(c, selectedHex))
+          ) : true;
+          const matchYarnTag = hasYarnTags ? Array.from(this.selectedYarnTags).some(t => (y.tags || []).includes(t)) : true;
+          return matchColor && matchYarnTag;
+        });
+
+        this.filteredProjects = this.projects.filter(p => {
+          const matchColor = hasColors ? Array.from(this.selectedSearchColors).some(selectedHex => 
+            (p.colors || []).some(c => isSimilarFamilyColor(c, selectedHex))
+          ) : true;
+          const matchYarnTag = hasYarnTags ? Array.from(this.selectedYarnTags).some(t => (p.yarnTags || []).includes(t)) : true;
+          const matchProjTag = hasProjTags ? Array.from(this.selectedProjectTags).some(t => (p.categoryTags || []).includes(t)) : true;
+          return matchColor && matchYarnTag && matchProjTag;
+        });
+
+        const yCount = document.getElementById('searchYarnCount');
+        if (yCount) yCount.innerText = this.filteredYarns.length;
+
+        const pCount = document.getElementById('searchProjectCount');
+        if (pCount) pCount.innerText = this.filteredProjects.length;
+
+        this.renderSearchDrawerResults();
+      }
+
+      renderSearchDrawerResults() {
+        const container = document.getElementById('searchDrawerContent');
+        if (!container) return;
+        
+        let htmlStr = '';
+        if (this.searchDrawerTab === 'yarns') {
+          if (!this.filteredYarns.length) {
+            container.innerHTML = '<div class="text-xs text-morandi-400 py-3 text-center font-serifTitle w-full">查無符合線材</div>';
+            return;
+          }
+          htmlStr = this.filteredYarns.map(y => `
+            <div data-flip-id="s_y_${y.id}" class="flip-item flex items-center space-x-2.5 p-2 rounded-2xl bg-white/80 border border-morandi-100 cursor-pointer active:scale-98 transition w-full" onclick="app.openYarnDetail('${y.id}')">
+              <img src="${y.image}" class="w-9 h-9 rounded-xl object-cover shrink-0" onerror="app.handleImgFallback(this)">
+              <div class="flex-1 min-w-0">
+                <h5 class="text-xs font-serifTitle font-bold text-morandi-800 truncate">${y.name}</h5>
+                <div class="flex items-center space-x-1 mt-0.5">
+                  ${(y.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${c}"></span>`).join('')}
+                  <span class="text-[10px] text-morandi-500 ml-1 font-serifBrand">${y.quantity} 球</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          if (!this.filteredProjects.length) {
+            container.innerHTML = '<div class="text-xs text-morandi-400 py-3 text-center font-serifTitle w-full">查無符合作品</div>';
+            return;
+          }
+          htmlStr = this.filteredProjects.map(p => `
+            <div data-flip-id="s_p_${p.id}" onclick="app.openProjectDetail('${p.id}')" class="flip-item flex items-center space-x-2.5 p-2 rounded-2xl bg-white/80 border border-morandi-100 cursor-pointer active:scale-98 transition w-full">
+              <img src="${p.image}" class="w-9 h-9 rounded-xl object-cover shrink-0" onerror="app.handleImgFallback(this)">
+              <div class="flex-1 min-w-0">
+                <h5 class="text-xs font-serifTitle font-bold text-morandi-800 truncate">${p.title}</h5>
+                <div class="flex items-center space-x-1 mt-0.5">
+                  ${(p.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${c}"></span>`).join('')}
+                  <span class="text-[10px] font-serifBrand text-morandi-400 ml-1">${(p.endDate || '').slice(5)}</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+        container.innerHTML = htmlStr;
+      }
+
+      // ==================== 照片取色與上傳管理 ====================
+      handleImageUpload(event, canvasId) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            if (canvasId === 'yarnCanvas') {
+              this.tempUploadedImage.yarn = dataUrl;
+              const p = document.getElementById('yarnUploadPrompt');
+              if (p) p.style.display = 'none';
+            }
+            if (canvasId === 'projectCanvas') {
+              this.tempUploadedImage.project = dataUrl;
+              const p = document.getElementById('projectUploadPrompt');
+              if (p) p.style.display = 'none';
+            }
+
+            const pickColor = (clientX, clientY) => {
+              const rect = canvas.getBoundingClientRect();
+              const scaleX = canvas.width / rect.width;
+              const scaleY = canvas.height / rect.height;
+              const x = (clientX - rect.left) * scaleX;
+              const y = (clientY - rect.top) * scaleY;
+
+              const pixel = ctx.getImageData(x, y, 1, 1).data;
+              const hex = '#' + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1).toUpperCase();
+              
+              const type = canvasId === 'yarnCanvas' ? 'yarn' : 'project';
+              this.addColorDot(type, hex);
+              this.showToast(`已提取 ${hex}`);
+            };
+
+            canvas.onclick = (evt) => pickColor(evt.clientX, evt.clientY);
+            canvas.ontouchstart = (evt) => {
+              const touch = evt.touches && evt.touches[0];
+              if (touch) pickColor(touch.clientX, touch.clientY);
+            };
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      handlePatternImageUpload(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.tempUploadedImage.pattern = e.target.result;
+          this.showToast('織譜照片已載入');
+        };
+        reader.readAsDataURL(file);
+      }
+
+      addColorDot(type, hex) {
+        if (!this.tempColors[type]) this.tempColors[type] = [];
+        if (!this.tempColors[type].includes(hex)) {
+          this.tempColors[type].push(hex);
+          this.renderTempColorDots(type);
+        }
+      }
+
+      removeColorDot(type, hex) {
+        if (!this.tempColors[type]) return;
+        this.tempColors[type] = this.tempColors[type].filter(c => c !== hex);
+        this.renderTempColorDots(type);
+      }
+
+      renderTempColorDots(type) {
+        const container = document.getElementById(type === 'yarn' ? 'yarnSelectedColors' : 'projectSelectedColors');
+        if (!container) return;
+        container.innerHTML = (this.tempColors[type] || []).map(c => `
+          <button type="button" onclick="app.removeColorDot('${type}', '${c}')" class="w-6 h-6 rounded-full border border-black/15 shadow-inner flex items-center justify-center relative group active:scale-90 transition" style="background-color: ${c}">
+            <span class="opacity-0 group-hover:opacity-100 text-[9px] text-white bg-black/60 rounded-full w-full h-full flex items-center justify-center">✕</span>
+          </button>
+        `).join('');
+      }
+
+      openModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
+      }
+
+      closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      }
+
+      stepModalCount(delta) {
+        const input = document.getElementById('yarnQuantityInput');
+        if (input) input.value = Math.max(1, parseInt(input.value || 1) + delta);
+      }
+
+      toggleSelectTag(btn) {
+        if (!btn) return;
+        btn.classList.toggle('bg-morandi-600');
+        btn.classList.toggle('text-white');
+        btn.classList.toggle('font-bold');
+        btn.classList.toggle('bg-morandi-100');
+        btn.classList.toggle('text-morandi-700');
+      }
+
+      saveYarn() {
+        const editId = document.getElementById('editYarnId').value;
+        const brand = document.getElementById('yarnBrandInput').value || 'DARUMA';
+        const name = document.getElementById('yarnNameInput').value || '未命名線材';
+        const quantity = parseInt(document.getElementById('yarnQuantityInput').value || 1);
+        const location = document.getElementById('yarnLocationInput').value || '台南';
+
+        const tags = Array.from(document.querySelectorAll('#yarnTypeSelectGroup .tag-btn.text-white')).map(b => b.innerText);
+        const colors = this.tempColors.yarn.length ? [...this.tempColors.yarn] : ['#9B83A4'];
+        const image = this.tempUploadedImage.yarn || fallbackSvg;
+        let savedYarn = null;
+
+        if (editId) {
+          const yarn = this.yarns.find(y => y.id === editId);
+          if (yarn) {
+            yarn.brand = brand;
+            yarn.name = name;
+            yarn.quantity = quantity;
+            yarn.location = location;
+            yarn.tags = tags.length ? tags : ['純色'];
+            yarn.colors = colors;
+            if (this.tempUploadedImage.yarn) yarn.image = this.tempUploadedImage.yarn;
+            savedYarn = yarn;
+          }
+          this.showToast('毛線資料已更新');
+        } else {
+          savedYarn = {
+            id: 'y_' + Date.now(),
+            brand,
+            name,
+            colors,
+            tags: tags.length ? tags : ['純色'],
+            quantity,
+            location,
+            image
+          };
+          this.yarns.unshift(savedYarn);
+          this.showToast('毛線已入櫃');
+        }
+
+        this.saveLocal('tung_yarns', this.yarns);
+        this.renderYarns(false);
+        this.renderYarnCharts();
+        this.updateStats();
+        this.closeModal('modalAddYarn');
+        this.tempColors.yarn = [];
+        this.tempUploadedImage.yarn = null;
+        this.renderTempColorDots('yarn');
+        document.getElementById('editYarnId').value = '';
+
+        if (savedYarn) {
+          this.dispatchCloudAction('saveYarn', { item: savedYarn });
+        }
+      }
+
+      saveNewPattern() {
+        const name = document.getElementById('patternNameInput').value || '新織譜';
+        const url = document.getElementById('patternUrlInput').value || '';
+        const tags = Array.from(document.querySelectorAll('#patternTypeSelectGroup .tag-btn.text-white')).map(b => b.innerText);
+        const image = this.tempUploadedImage.pattern || fallbackSvg;
+
+        const newPattern = {
+          id: 'p_' + Date.now(),
+          name,
+          tags: tags.length ? tags : ['小物'],
+          date: relDate(0),
+          url,
+          image
+        };
+
+        this.patterns.unshift(newPattern);
+        this.saveLocal('tung_patterns', this.patterns);
+        this.renderPatterns();
+        this.updateStats();
+        this.closeModal('modalAddPattern');
+        this.tempUploadedImage.pattern = null;
+        this.showToast('織譜已典藏至織典');
+
+        this.dispatchCloudAction('savePattern', { item: newPattern });
+      }
+
+      saveProject() {
+        const editId = document.getElementById('editProjectId').value;
+        const title = document.getElementById('projectNameInput').value || '編織作品';
+        const startDate = document.getElementById('projectStartDate').value || relDate(0);
+        const endDate = document.getElementById('projectEndDate').value || relDate(7);
+        const notes = document.getElementById('projectNotesInput').value || '';
+        const purpose = document.querySelector('input[name="projectPurpose"]:checked')?.value || '自用';
+        const category = document.getElementById('projectCategorySelect').value || '包包';
+        const yarnTag = document.getElementById('projectYarnTagSelect').value || '羊毛';
+        const colors = this.tempColors.project.length ? [...this.tempColors.project] : ['#9B83A4'];
+        const image = this.tempUploadedImage.project || fallbackSvg;
+        let savedProject = null;
+
+        if (editId) {
+          const prj = this.projects.find(p => p.id === editId);
+          if (prj) {
+            prj.title = title;
+            prj.startDate = startDate;
+            prj.endDate = endDate;
+            prj.notes = notes;
+            prj.purpose = purpose;
+            prj.categoryTags = [category];
+            prj.yarnTags = [yarnTag];
+            prj.colors = colors;
+            if (this.tempUploadedImage.project) prj.image = this.tempUploadedImage.project;
+            savedProject = prj;
+          }
+          this.showToast('作品已更新');
+        } else {
+          savedProject = {
+            id: 'prj_' + Date.now(),
+            title,
+            startDate,
+            endDate,
+            colors,
+            yarnTags: [yarnTag],
+            categoryTags: [category],
+            purpose,
+            notes,
+            image
+          };
+          this.projects.unshift(savedProject);
+          this.showToast('作品已記錄');
+        }
+
+        this.saveLocal('tung_projects', this.projects);
+        this.renderGallery();
+        this.updateStats();
+        this.closeModal('modalAddProject');
+        this.tempColors.project = [];
+        this.tempUploadedImage.project = null;
+        this.renderTempColorDots('project');
+        document.getElementById('editProjectId').value = '';
+
+        if (savedProject) {
+          this.dispatchCloudAction('saveProject', { item: savedProject });
+        }
+      }
+
+      renderAll() {
+        this.renderYarnCharts();
+        this.renderYarns(false);
+        this.renderPatterns();
+        this.renderGallery();
+        this.updateStats();
+      }
+    }
+
+    function initStudioApp() {
+      if (window.gsap && window.Flip) {
+        gsap.registerPlugin(Flip);
+      }
+      if (!window.app || !(window.app instanceof AppController)) {
+        window.app = new AppController();
+        window.app.init();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initStudioApp);
+    } else {
+      initStudioApp();
+    }
+
+    // 註冊 PWA Service Worker (滿足瀏覽器安裝條件)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch((err) => {
+          console.debug('ServiceWorker 註冊狀態:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
