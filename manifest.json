@@ -8,17 +8,15 @@
 "theme_color": "#9B83A4",
 "orientation": "portrait",
 "icons": [
-{
-"src": "https://api.iconify.design/ph:yarn-fill.svg?color=%239b83a4&width=192&height=192",
-"sizes": "192x192",
-"type": "image/svg+xml",
-"purpose": "any maskable"
-},
-{
-"src": "https://api.iconify.design/ph:yarn-fill.svg?color=%239b83a4&width=512&height=512",
-"sizes": "512x512",
-"type": "image/svg+xml",
-"purpose": "any maskable"
-}
-]
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
