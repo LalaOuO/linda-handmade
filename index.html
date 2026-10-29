@@ -7,7 +7,7 @@
 
   <!-- PWA 核心設定標籤 -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#9B83A4">
+  <meta name="theme-color" content="#FAF7F2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="毛線手札">
@@ -87,7 +87,7 @@
     }
     
     body {
-      background-color: #E2DDD6;
+      background-color: #FAF7F2;
       color: #433D46;
       font-family: 'Inter', "Noto Serif TC", sans-serif;
       user-select: none;
@@ -121,8 +121,7 @@
     .bounce-char {
       display: inline-block;
       opacity: 0;
-      /* 先執行墨水淡入，隨後觸發彈跳 */
-      animation: ink-bleed 0.3s forwards, letter-bounce 0.8s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+      animation: ink-bleed 0.25s forwards, letter-bounce 0.8s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
     }
 
     /* 勾織微幾何半透明底圖 */
@@ -139,7 +138,7 @@
 
     /* 1x4 玻璃珠長條按鈕 */
     .glass-bead-card {
-      background: rgba(255, 255, 255, 0.76);
+      background: rgba(255, 255, 255, 0.78);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1.2px solid rgba(255, 255, 255, 0.9);
@@ -159,7 +158,7 @@
       background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.8);
     }
 
     /* 平滑無滾動條 */
@@ -247,21 +246,22 @@
       transform: scaleX(1);
     }
 
-    /* 下拉選單展開 (Dropdown Reveal) 動態效果 */
+    /* 下拉選單展開動態效果 (統一高度 38px 與一致莫蘭迪邊框) */
     .custom-dropdown {
       position: relative;
       width: 100%;
     }
     .custom-dropdown-btn {
       width: 100%;
+      height: 38px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 7px 12px;
+      padding: 0 12px;
       font-size: 12px;
-      border-radius: 14px;
+      border-radius: 12px;
       background: rgba(255, 255, 255, 0.95);
-      border: 1px solid #E6DCCF;
+      border: 1px solid rgba(228, 218, 232, 0.9);
       color: #34263B;
       cursor: pointer;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -284,10 +284,10 @@
       left: 0;
       right: 0;
       top: calc(100% + 5px);
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(230, 220, 207, 0.9);
+      border: 1px solid rgba(228, 218, 232, 0.9);
       border-radius: 16px;
       box-shadow: 0 12px 28px -6px rgba(103, 82, 113, 0.16);
       overflow: hidden;
@@ -296,8 +296,8 @@
       transform: scaleY(0.6);
       opacity: 0;
       pointer-events: none;
-      transition: transform 0.4s cubic-bezier(0.3, 1.3, 0.5, 1), opacity 0.3s ease;
-      max-height: 180px;
+      transition: transform 0.35s cubic-bezier(0.3, 1.3, 0.5, 1), opacity 0.25s ease;
+      max-height: 260px; /* 放寬展開高度，避免二次滑動 */
       overflow-y: auto;
     }
     .custom-dropdown.active .custom-dropdown-menu {
@@ -306,7 +306,7 @@
       pointer-events: auto;
     }
     .custom-dropdown-item {
-      padding: 8px 14px;
+      padding: 9px 14px;
       font-size: 12px;
       color: #4E3C56;
       cursor: pointer;
@@ -317,7 +317,7 @@
     .custom-dropdown.active .custom-dropdown-item {
       opacity: 1;
       transform: translateY(0);
-      transition-delay: calc(var(--i) * 0.05s);
+      transition-delay: calc(var(--i) * 0.04s);
     }
     .custom-dropdown-item:hover, .custom-dropdown-item.selected {
       background: #F3EEF5;
@@ -331,7 +331,7 @@
       overflow-y: auto;
       overflow-x: hidden;
       background-color: transparent;
-      padding: 0.5rem 0.875rem 1.5rem 0.875rem; /* 修正底部過大的留白 */
+      padding: 0.5rem 0.875rem 1.5rem 0.875rem;
       touch-action: pan-y;
     }
 
@@ -357,14 +357,13 @@
 
 <body class="flex items-center justify-center min-h-screen sm:p-2 p-0">
 
-  <!-- 面板容器：黃金適配 Galaxy Z Flip (22:9 長寬比，高 880px / 100dvh) -->
-  <div id="phoneFrame" class="relative w-full sm:max-w-[400px] h-[100dvh] sm:h-[880px] crochet-bg sm:rounded-[44px] shadow-2xl flex flex-col border border-morandi-200/90 overflow-hidden">
+  <!-- 面板容器：手機版滿版無邊界，融合底色無縫對接 -->
+  <div id="phoneFrame" class="relative w-full sm:max-w-[400px] h-[100dvh] sm:h-[880px] crochet-bg sm:rounded-[44px] sm:shadow-2xl flex flex-col sm:border border-morandi-200/90 overflow-hidden">
     
     <!-- 頂部精緻導航列 (Sticky 固定) -->
     <header class="px-5 pt-3.5 pb-2.5 flex items-center justify-between z-30 shrink-0 bg-oat-50/95 backdrop-blur-md border-b border-morandi-100/80 sticky top-0">
       <div class="flex items-center space-x-2">
         <button id="navBackBtn" onclick="app.goHome()" class="hidden mr-1 text-morandi-600 active:scale-90 transition p-1" title="返回首頁">
-          <!-- 回上頁圖示保留簡約線條 SVG -->
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         </button>
         <h1 id="pageTitle" class="text-base font-serifTitle tracking-widest font-semibold text-morandi-900 flex">
@@ -374,7 +373,7 @@
       
       <div class="flex items-center space-x-2">
         <span id="brandTitle" class="text-[11px] font-serifBrand tracking-widest text-morandi-600 font-semibold uppercase flex">
-          <!-- JS 動態生成墨水字元 -->
+          <!-- JS 動態生成逐字彈跳墨水字元 -->
         </span>
         <div class="w-1.5 h-1.5 rounded-full bg-morandi-400"></div>
       </div>
@@ -386,15 +385,14 @@
       <!-- ==================== 1. 入口頁面 (首頁) ==================== -->
       <section id="viewHome" class="view-section flex flex-col z-10 !p-0">
         
-        <!-- 專屬動態輪播櫥窗 (滿版橫向，置頂) -->
-        <div class="w-full h-64 sm:h-72 shrink-0 relative overflow-hidden shadow-sm rounded-b-[36px]">
-          <!-- object-bottom 保留靠下的人物特寫 -->
-          <img class="home-slide opacity-100 absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1N5EIl3Uq1G9BwpljZwWGpIvGIbU0BQoe" alt="櫥窗1">
-          <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1c5BsMpcJMaKBl4PJVpEp1wRtSzh_ThGs" alt="櫥窗2">
-          <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1nHRcSkZUYnfOjMUMOO7vGzSutOIwkdYY" alt="櫥窗3">
+        <!-- 專屬動態輪播櫥窗 (滿版 4:3 比例橫幅，取消圓角直接滿版) -->
+        <div class="w-full aspect-[4/3] shrink-0 relative overflow-hidden shadow-sm">
+          <img class="home-slide opacity-100 absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1u4LTKoTXwWbKNZTNnNzVJxCMKewV4HfD" alt="櫥窗1">
+          <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1TjKCMXaEbWDH6TdZa7kvXqjjYo69q9mw" alt="櫥窗2">
+          <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1rF4LYr5580X4PlbBljPSZKn0beKRH-LK" alt="櫥窗3">
           
           <!-- 左下角 Linda 浮水印 -->
-          <div class="absolute bottom-4 left-5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-xl shadow-sm border border-white/30 pointer-events-none z-10">
+          <div class="absolute bottom-3 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-xl shadow-sm border border-white/30 pointer-events-none z-10">
             <span class="text-xs text-white font-serifTitle tracking-widest font-semibold drop-shadow-md">Linda</span>
           </div>
         </div>
@@ -461,7 +459,7 @@
 
       <!-- ==================== 2. 毛線櫃 View ==================== -->
       <section id="viewYarns" class="view-section hidden flex-col gap-3.5 z-20">
-        <!-- 頂部圓餅圖 (支援左右滑動切換：顏色分佈 / 種類分佈) -->
+        <!-- 頂部圓餅圖 -->
         <div class="relative w-full rounded-3xl glass-panel p-3.5 shadow-sm border border-morandi-200/80 overflow-hidden">
           <div class="flex items-center justify-between mb-2">
             <span id="yarnChartTitle" class="text-xs font-serifTitle font-bold text-morandi-900">毛線庫存 · 顏色分佈</span>
@@ -479,12 +477,11 @@
                 <span class="text-[8px] text-morandi-400">總球數</span>
               </div>
             </div>
-            <!-- 圖例與百分比清單 -->
             <div id="yarnChartLegend" class="flex-1 pl-3.5 flex flex-col gap-1.5 justify-center overflow-hidden"></div>
           </div>
         </div>
 
-        <!-- 色系滑動篩選列 (放置於圓餅圖下方) -->
+        <!-- 色系篩選列 -->
         <div class="flex items-center justify-between gap-2 py-0.5">
           <div class="flex-1 overflow-x-auto no-scrollbar flex items-center space-x-2.5 py-1.5 px-0.5" id="yarnColorFilterBar"></div>
         </div>
@@ -508,13 +505,12 @@
           <button onclick="app.setYarnGridColumns(4)" class="yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">4×4</button>
         </div>
 
-        <!-- 毛線細項清單 (觸發篩選時套用 Flip 平滑補位動畫) -->
+        <!-- 毛線清單 -->
         <div id="yarnListContainer" class="flex flex-col gap-2.5 touch-pan-y relative min-h-[140px]"></div>
       </section>
 
-      <!-- ==================== 3. 織典 View (原圖書館) ==================== -->
+      <!-- ==================== 3. 織典 View ==================== -->
       <section id="viewLibrary" class="view-section hidden flex-col gap-3 z-20">
-        <!-- 織典專屬工具列：防休眠 + 關鍵字放大鏡搜尋 + 視圖切換 (與藝廊相同配置) -->
         <div class="flex items-center justify-between py-1 border-b border-morandi-100/80">
           <div class="flex items-center space-x-2">
             <button id="wakeLockBtn" onclick="app.toggleWakeLock()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-white/90 border border-morandi-200/70 text-xs font-medium text-morandi-700 shadow-sm active:scale-95 transition">
@@ -537,7 +533,6 @@
           </div>
         </div>
 
-        <!-- 織典宮格密度選單 -->
         <div id="patGridDensityMenu" class="hidden flex items-center justify-end space-x-1 px-1 py-1">
           <span class="text-[10px] text-morandi-500 font-serifBrand mr-2">宮格密度:</span>
           <button onclick="app.setPatternGridColumns(1)" class="pat-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">1欄</button>
@@ -545,7 +540,6 @@
           <button onclick="app.setPatternGridColumns(3)" class="pat-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">3×3</button>
         </div>
 
-        <!-- 織典關鍵字搜尋列 -->
         <div id="patternSearchDrawer" class="hidden transition-all duration-300">
           <div class="relative">
             <input type="text" id="patternSearchInput" oninput="app.onPatternSearchInput(this.value)" placeholder="輸入關鍵字或標籤..." class="w-full px-3.5 py-1.5 pl-8 text-xs rounded-2xl bg-white border border-morandi-200/90 shadow-inner focus:outline-none focus:ring-1 focus:ring-morandi-400">
@@ -554,7 +548,6 @@
           </div>
         </div>
 
-        <!-- 織譜卡片列表/宮格容器 -->
         <div id="patternListContainer" class="flex flex-col gap-3 relative"></div>
       </section>
 
@@ -601,7 +594,6 @@
 
       <!-- ==================== 5. 時光儀 View ==================== -->
       <section id="viewChronometer" class="view-section hidden flex-col space-y-5 z-20">
-        <!-- (1) 數據儀表卡片：毛線庫存 / 織譜收集 / 作品典藏 -->
         <div class="grid grid-cols-3 gap-2" id="statCardsGroup">
           <div class="glass-panel p-2.5 rounded-2xl text-center shadow-sm relative overflow-hidden stat-card">
             <span class="text-[9px] font-serifBrand tracking-wider text-morandi-500 block">毛線庫存</span>
@@ -634,11 +626,11 @@
           </div>
         </div>
 
-        <!-- (2) 作品完成軌跡 - 原生感月曆檢視 -->
+        <!-- 作品完成軌跡 - 原生感月曆檢視 -->
         <div class="glass-panel rounded-3xl shadow-sm overflow-hidden flex flex-col border border-morandi-200/80">
           <div class="px-3 py-2 flex items-center justify-between border-b border-morandi-100 bg-oat-100/60">
             <button onclick="app.changeCalendarMonth(-1)" class="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-morandi-200 text-morandi-500 hover:text-morandi-800 transition active:scale-90">‹</button>
-            <span id="calendarMonthLabel" class="text-xs font-serifTitle font-bold text-morandi-900 tracking-widest">2024 年 10 月</span>
+            <span id="calendarMonthLabel" class="text-xs font-serifTitle font-bold text-morandi-900 tracking-widest">2026 年 10 月</span>
             <button onclick="app.changeCalendarMonth(1)" class="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-morandi-200 text-morandi-500 hover:text-morandi-800 transition active:scale-90">›</button>
           </div>
           
@@ -657,7 +649,7 @@
           </div>
         </div>
 
-        <!-- (3) 智慧色彩與多選 Hashtag 雙抽屜檢索 -->
+        <!-- 智慧色彩與多選標籤檢索 -->
         <div class="glass-panel p-3.5 rounded-3xl shadow-sm flex flex-col gap-3 border border-morandi-200/80">
           <div class="flex items-center justify-between">
             <span class="text-xs font-serifTitle font-bold text-morandi-900 tracking-wider">色彩與標籤檢索</span>
@@ -693,8 +685,8 @@
 
     </main>
 
-    <!-- 底層導航列 (4 大模組，使用 hidden 控制隱藏) -->
-    <nav id="bottomNavBar" class="shrink-0 bg-white/95 backdrop-blur-md border-t border-morandi-100 flex items-center justify-around py-2 px-3 z-40 relative hidden">
+    <!-- 底層導航列 (4 大模組，融合羽化漸層背景) -->
+    <nav id="bottomNavBar" class="shrink-0 bg-gradient-to-t from-oat-50 via-oat-50/95 to-oat-50/70 backdrop-blur-md flex items-center justify-around pt-2 pb-[calc(0.6rem+env(safe-area-inset-bottom,0px))] px-3 z-40 relative hidden border-t border-morandi-100/50">
       <button onclick="app.navigate('yarns')" id="tabBtn_yarns" class="flex flex-col items-center space-y-1 w-14 text-morandi-400 hover:text-morandi-700 transition">
         <i class="ph ph-yarn text-xl mb-1"></i>
         <span class="text-[9px] font-serifTitle">毛線</span>
@@ -716,8 +708,8 @@
       </button>
     </nav>
 
-    <!-- 全域浮動新增按鈕 -->
-    <div id="globalFabContainer" class="absolute bottom-[66px] right-4 z-40 hidden">
+    <!-- 全域浮動新增按鈕 (自動配合 Safe Area 懸浮高度) -->
+    <div id="globalFabContainer" class="absolute bottom-[calc(74px+env(safe-area-inset-bottom,0px))] right-4 z-40 hidden">
       <button id="globalFabBtn" onclick="app.handleGlobalFabClick()" class="fab-expanding bg-morandi-600 text-white flex items-center justify-center shadow-lg border border-white/40 cursor-pointer overflow-hidden p-3">
         <span class="fab-icon shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
@@ -728,7 +720,7 @@
 
     <!-- 彈窗 1: 作品詳情故事卡 -->
     <div id="modalProjectDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="w-full sm:max-w-[390px] max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+      <div class="w-full sm:max-w-[390px] max-h-[92vh] sm:max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
         <div class="relative h-64 shrink-0 bg-morandi-100">
           <img id="detailImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" alt="作品" class="w-full h-full object-cover" onerror="handleImgFallback(this)">
           <button onclick="app.closeModal('modalProjectDetail')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-md active:scale-90">
@@ -762,7 +754,7 @@
 
     <!-- 彈窗 2: 毛線檔案室 -->
     <div id="modalYarnDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="w-full sm:max-w-[390px] max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+      <div class="w-full sm:max-w-[390px] max-h-[92vh] sm:max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
         <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
           <h3 class="text-sm font-serifTitle font-bold text-morandi-900">毛線檔案室</h3>
           <button onclick="app.closeModal('modalYarnDetail')" class="text-morandi-400 hover:text-morandi-700">✕</button>
@@ -820,9 +812,9 @@
       </div>
     </div>
 
-    <!-- 彈窗 4: 新增/編輯毛線 (套用動態自訂下拉選單) -->
+    <!-- 彈窗 4: 新增/編輯毛線 (統一數量與存放地外框與高度) -->
     <div id="modalAddYarn" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="w-full sm:max-w-[390px] max-h-[88vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+      <div class="w-full sm:max-w-[390px] max-h-[92vh] sm:max-h-[88vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
         <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
           <h3 id="modalYarnTitle" class="text-sm font-serifTitle font-bold text-morandi-800">登錄毛線</h3>
           <button onclick="app.closeModal('modalAddYarn')" class="text-morandi-400 hover:text-morandi-700">✕</button>
@@ -872,18 +864,18 @@
             </div>
           </div>
 
+          <!-- 數量與存放地點：標籤與邊框高度 38px 完美對齊 -->
           <div class="grid grid-cols-2 gap-3 mt-1">
             <div>
-              <span class="text-xs text-morandi-700">數量 (球)</span>
-              <div class="flex items-center mt-1 bg-white rounded-xl border border-morandi-200 overflow-hidden">
-                <button type="button" onclick="app.stepModalCount(-1)" class="px-3 py-1.5 text-morandi-600 font-bold">-</button>
-                <input type="number" id="yarnQuantityInput" value="2" class="w-full text-center text-xs py-1 focus:outline-none" min="1">
-                <button type="button" onclick="app.stepModalCount(1)" class="px-3 py-1.5 text-morandi-600 font-bold">+</button>
+              <span class="text-xs text-morandi-700 mb-1 block">數量 (球)</span>
+              <div class="flex items-center h-[38px] bg-white/95 rounded-xl border border-morandi-200/90 overflow-hidden">
+                <button type="button" onclick="app.stepModalCount(-1)" class="w-9 h-full flex items-center justify-center text-morandi-600 font-bold hover:bg-morandi-50 active:bg-morandi-100 transition">-</button>
+                <input type="number" id="yarnQuantityInput" value="2" class="w-full h-full text-center text-xs bg-transparent focus:outline-none font-semibold text-morandi-900" min="1">
+                <button type="button" onclick="app.stepModalCount(1)" class="w-9 h-full flex items-center justify-center text-morandi-600 font-bold hover:bg-morandi-50 active:bg-morandi-100 transition">+</button>
               </div>
             </div>
             <div>
               <span class="text-xs text-morandi-700 mb-1 block">存放地點</span>
-              <!-- 自訂動態下拉選單 -->
               <div id="yarnLocationDropdown" class="custom-dropdown">
                 <button type="button" class="custom-dropdown-btn">
                   <span class="custom-dropdown-label">台南</span>
@@ -906,7 +898,7 @@
 
     <!-- 彈窗 5: 新增織譜 -->
     <div id="modalAddPattern" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="w-full sm:max-w-[390px] max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+      <div class="w-full sm:max-w-[390px] max-h-[92vh] sm:max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
         <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
           <h3 class="text-sm font-serifTitle font-bold text-morandi-800">典藏至織典</h3>
           <button onclick="app.closeModal('modalAddPattern')" class="text-morandi-400 hover:text-morandi-700">✕</button>
@@ -920,9 +912,7 @@
 
           <div class="mt-2">
             <span class="text-xs text-morandi-700">分類標籤 (點選切換 / 可自訂)</span>
-            <div class="flex flex-wrap gap-1.5 mt-1" id="patternTypeSelectGroup">
-              <!-- JS rendered -->
-            </div>
+            <div class="flex flex-wrap gap-1.5 mt-1" id="patternTypeSelectGroup"></div>
             <div class="flex gap-2 mt-2">
               <input type="text" id="newPatternTagInput" placeholder="自訂新標籤..." class="flex-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
               <button type="button" onclick="app.addCustomPatternTag()" class="px-3 py-1 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium">+ 新增</button>
@@ -945,9 +935,9 @@
       </div>
     </div>
 
-    <!-- 彈窗 6: 新增/編輯作品 (套用動態自訂下拉選單) -->
+    <!-- 彈窗 6: 新增/編輯作品 -->
     <div id="modalAddProject" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="w-full sm:max-w-[390px] max-h-[88vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+      <div class="w-full sm:max-w-[390px] max-h-[92vh] sm:max-h-[88vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
         <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100">
           <h3 id="modalProjectTitle" class="text-sm font-serifTitle font-bold text-morandi-800">記錄作品</h3>
           <button onclick="app.closeModal('modalAddProject')" class="text-morandi-400 hover:text-morandi-700">✕</button>
@@ -990,7 +980,6 @@
           <div class="grid grid-cols-2 gap-3 mt-1">
             <div>
               <span class="text-xs text-morandi-700 mb-1 block">分類標籤</span>
-              <!-- 自訂動態下拉選單 -->
               <div id="projectCategoryDropdown" class="custom-dropdown">
                 <button type="button" class="custom-dropdown-btn">
                   <span class="custom-dropdown-label">包包</span>
@@ -1007,7 +996,6 @@
             </div>
             <div>
               <span class="text-xs text-morandi-700 mb-1 block">線材種類</span>
-              <!-- 自訂動態下拉選單 -->
               <div id="projectYarnTagDropdown" class="custom-dropdown">
                 <button type="button" class="custom-dropdown-btn">
                   <span class="custom-dropdown-label">羊毛</span>
@@ -1047,7 +1035,7 @@
       </div>
     </div>
 
-    <!-- 柔和輕量通知訊息 (同步與儲存時專屬快閃小視窗) -->
+    <!-- 柔和輕量通知訊息 -->
     <div id="toastMessage" class="fixed bottom-7 left-1/2 -translate-x-1/2 bg-morandi-900/95 text-white text-xs px-4 py-2 rounded-full shadow-lg backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 z-50 font-serifTitle flex items-center space-x-2">
       <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
       <span id="toastText">已儲存</span>
@@ -1057,10 +1045,24 @@
 
   <!-- JavaScript 核心驅動 -->
   <script>
+    // 日期格式全域標準化 (統一為 YYYY.MM.DD)
     function relDate(daysOffset) {
       const d = new Date();
       d.setDate(d.getDate() + daysOffset);
-      return d.toISOString().slice(0, 10);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}.${m}.${day}`;
+    }
+
+    function toInputDate(dottedStr) {
+      if (!dottedStr) return '';
+      return dottedStr.replace(/\./g, '-');
+    }
+
+    function toDisplayDate(dashedStr) {
+      if (!dashedStr) return '';
+      return dashedStr.replace(/-/g, '.');
     }
 
     // 7 大經典莫蘭迪色系基準
@@ -1130,31 +1132,20 @@
       return hsl.h;
     }
 
-    /**
-     * 高靈敏度色彩判定：防止紅與橘、綠與紫/藍、黑色互串
-     */
     function getColorCategory(hex) {
       if (!hex) return 'c_purple';
       const rgb = hexToRgb(hex);
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
 
-      // 1. 純黑、深炭灰
       if (hsl.l <= 0.22) return 'c_gray';
-      // 2. 燕麥白、極淺米灰
       if (hsl.l >= 0.86 || (hsl.s <= 0.12 && hsl.l >= 0.65)) return 'c_white';
-      // 3. 中性灰
       if (hsl.s <= 0.14) return 'c_gray';
 
       const h = hsl.h;
-      // 4. 赤陶紅 (345° ~ 15°)
       if (h >= 345 || h < 18) return 'c_red';
-      // 5. 暖杏橙 (18° ~ 55°)
       if (h >= 18 && h < 55) return 'c_orange';
-      // 6. 鼠尾草綠 (65° ~ 168°)
       if (h >= 65 && h < 168) return 'c_green';
-      // 7. 冰川藍 (168° ~ 250°)
       if (h >= 168 && h < 250) return 'c_blue';
-      // 8. 柔薰紫 (250° ~ 345°)
       if (h >= 250 && h < 345) return 'c_purple';
 
       return 'c_purple';
@@ -1162,9 +1153,7 @@
 
     function isSimilarFamilyColor(itemHex, targetHex) {
       if (!itemHex || !targetHex) return false;
-      const targetCat = getColorCategory(targetHex);
-      const itemCat = getColorCategory(itemHex);
-      return itemCat === targetCat;
+      return getColorCategory(itemHex) === getColorCategory(targetHex);
     }
 
     class AppController {
@@ -1172,7 +1161,6 @@
         this.yarns = this.loadLocal('tung_yarns', defaultYarns);
         this.patterns = this.loadLocal('tung_patterns', defaultPatterns);
         this.projects = this.loadLocal('tung_projects', defaultProjects);
-        // 設定您的 Google Apps Script Web App 網址
         this.gasUrl = localStorage.getItem('tung_gas_url') || 'https://script.google.com/macros/s/AKfycbzUc9_wntXsWjB_lJr5Q3H0gFlW3cyK3c7kyaW-iSjcDZrB0KVDqzIS9hLMMzcKp_NS/exec';
         this.isSyncing = false;
 
@@ -1182,17 +1170,14 @@
         this.selectedPikminColorId = 'all';
         this.selectedPikminHex = null;
 
-        // 毛線櫃排版與圓餅圖狀態
         this.yarnLayout = 'list';
         this.yarnGridColumns = 2;
-        this.yarnChartType = 'color'; // 'color' | 'tag'
+        this.yarnChartType = 'color';
 
-        // 織典排版與搜尋
         this.patternLayout = 'list';
         this.patternGridColumns = 2;
         this.patternSearchQuery = '';
 
-        // 藝廊排版
         this.galleryLayout = 'grid';
         this.gridColumns = 2;
         this.gallerySearchQuery = '';
@@ -1212,7 +1197,7 @@
 
         this.tempColors = { yarn: [], project: [] };
         this.customYarnTagPool = ['純色', '漸層', '金蔥', '羊毛', '棉線'];
-        this.customCategoryTagPool = ['包包', '娃娃', '小物', '吊飾']; // 織典與作品分類共用 Pool
+        this.customCategoryTagPool = ['包包', '娃娃', '小物', '吊飾'];
         this.tempUploadedImage = { yarn: null, project: null, pattern: null };
       }
 
@@ -1249,14 +1234,12 @@
           this.initPageSwipeGestures();
           this.initHomeCarousel();
 
-          // 自動從 Apps Script 雲端環境拉取最新資料庫
           this.syncFromCloud(false);
         } catch (e) {
           console.error("初始化例外:", e);
         }
       }
 
-      // ==================== 首頁輪播牆 ====================
       initHomeCarousel() {
         const slides = document.querySelectorAll('.home-slide');
         if (!slides.length) return;
@@ -1267,10 +1250,9 @@
           current = (current + 1) % slides.length;
           slides[current].classList.remove('opacity-0');
           slides[current].classList.add('opacity-100');
-        }, 3000); // 調整為 3 秒一張
+        }, 3000);
       }
 
-      // ==================== 下拉選單動畫元件 (Dropdown Reveal) ====================
       initCustomDropdowns() {
         document.querySelectorAll('.custom-dropdown').forEach(dd => {
           const btn = dd.querySelector('.custom-dropdown-btn');
@@ -1281,7 +1263,6 @@
           btn.onclick = (e) => {
             e.stopPropagation();
             const isActive = dd.classList.contains('active');
-            // 關閉其他已展開的選單
             document.querySelectorAll('.custom-dropdown.active').forEach(other => {
               if (other !== dd) other.classList.remove('active');
             });
@@ -1302,13 +1283,11 @@
           });
         });
 
-        // 點擊空白處關閉選單
         window.addEventListener('click', () => {
           document.querySelectorAll('.custom-dropdown.active').forEach(dd => dd.classList.remove('active'));
         });
       }
 
-      // 動態更新下拉選單選項
       populateDropdown(dropdownId, options, selectedValue) {
         const dd = document.getElementById(dropdownId);
         if (!dd) return;
@@ -1325,7 +1304,6 @@
         label.innerText = validVal;
         if (hiddenInput) hiddenInput.value = validVal;
         
-        // 重新綁定事件
         const items = menu.querySelectorAll('.custom-dropdown-item');
         items.forEach(item => {
           item.onclick = (e) => {
@@ -1361,7 +1339,6 @@
         if (matched && hiddenInput) hiddenInput.value = value;
       }
 
-      // ==================== 左右滑動切換分頁 (Swipe Navigation) ====================
       initPageSwipeGestures() {
         const main = document.getElementById('mainContainer');
         if (!main) return;
@@ -1383,16 +1360,13 @@
             const diffY = e.changedTouches[0].clientY - startY;
             const duration = Date.now() - startTime;
 
-            // 確保為水平滑動且速度夠快
             if (Math.abs(diffX) > 55 && Math.abs(diffX) > Math.abs(diffY) * 1.5 && duration < 350) {
               const curIdx = this.viewOrder.indexOf(this.currentView);
               if (curIdx === -1) return;
 
               if (diffX < 0 && curIdx < this.viewOrder.length - 1) {
-                // 向左滑動 => 下一頁 (由右往左推入)
                 this.navigate(this.viewOrder[curIdx + 1], 1);
               } else if (diffX > 0 && curIdx > 0) {
-                // 向右滑動 => 上一頁 (由左往右推入)
                 this.navigate(this.viewOrder[curIdx - 1], -1);
               }
             }
@@ -1400,7 +1374,6 @@
         }, { passive: true });
       }
 
-      // ==================== 雲端後端通訊 ====================
       isGasEnv() {
         return typeof google !== 'undefined' && google.script && google.script.run;
       }
@@ -1427,7 +1400,6 @@
             })
             .getAppData();
         } else if (this.gasUrl) {
-          // 當掛在 GitHub Pages 時，改用 HTTP API 讀取試算表
           try {
             const res = await fetch(`${this.gasUrl}?api=get_data`);
             const json = await res.json();
@@ -1475,11 +1447,10 @@
             })
             .apiDispatch(action, payload);
         } else if (this.gasUrl) {
-          // 當掛在 GitHub Pages 時，使用 POST 將資料寫入試算表及雲端硬碟
           try {
             await fetch(this.gasUrl, {
               method: 'POST',
-              mode: 'no-cors', // 避開跨網域限制
+              mode: 'no-cors',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ action, ...payload })
             });
@@ -1495,19 +1466,18 @@
       }
 
       renderInkText(elId, text) {
-        if (this.lastRenderedTitle === text && elId === 'pageTitle') return;
         const el = document.getElementById(elId);
         if (!el) return;
 
         if (elId === 'brandTitle') {
           el.innerHTML = '';
-          // 墨水動畫跑完後，延遲 1s 開始逐字彈跳
           setTimeout(() => {
             el.innerHTML = text.split('').map((char, i) => 
-              `<span class="bounce-char" style="animation-delay: ${1 + i * 0.08}s">${char === ' ' ? '&nbsp;' : char}</span>`
+              `<span class="bounce-char" style="animation-delay: ${0.15 + i * 0.05}s">${char === ' ' ? '&nbsp;' : char}</span>`
             ).join('');
-          }, 10);
+          }, 15);
         } else {
+          if (this.lastRenderedTitle === text && elId === 'pageTitle') return;
           el.innerHTML = text.split('').map((char, i) => 
             `<span class="ink-char" style="animation-delay: ${i * 0.22}s">${char === ' ' ? '&nbsp;' : char}</span>`
           ).join('');
@@ -1519,7 +1489,6 @@
         window.handleImgFallback(imgEl);
       }
 
-      // ==================== 左右滑動進場轉場 (Slide Transition) ====================
       navigate(viewName, direction = 0) {
         if (this.currentView === viewName) return;
         const oldView = this.currentView;
@@ -1542,14 +1511,15 @@
         const backBtn = document.getElementById('navBackBtn');
         const bottomNav = document.getElementById('bottomNavBar');
 
-        // 回到首頁 (特別清除子頁面遺留工具列)
+        // 每次切換分頁，右上角品牌字均重新觸發彈跳墨水動畫
+        this.renderInkText('brandTitle', "LINDA'S HANDMADE");
+
         if (viewName === 'home') {
           if (backBtn) backBtn.classList.add('hidden');
           if (bottomNav) {
             gsap.to(bottomNav, { y: 20, opacity: 0, duration: 0.3, onComplete: () => bottomNav.classList.add('hidden') });
           }
           if (window.gsap && oldEl) {
-            // 與分頁相同流暢的滑動進場
             gsap.to(oldEl, { xPercent: 100, duration: 0.38, ease: "power2.inOut", onComplete: () => { oldEl.classList.add('hidden'); gsap.set(oldEl, {clearProps: "all"}); } });
             gsap.fromTo(newEl, { xPercent: -100 }, { xPercent: 0, duration: 0.38, ease: "power2.inOut" });
           } else if (oldEl) {
@@ -1560,7 +1530,7 @@
           if (bottomNav) {
             bottomNav.classList.remove('hidden');
             if (oldView === 'home') {
-               gsap.fromTo(bottomNav, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.38, ease: "power2.out" });
+              gsap.fromTo(bottomNav, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.38, ease: "power2.out" });
             }
           }
           
@@ -1571,7 +1541,7 @@
               const newIdx = this.viewOrder.indexOf(viewName);
               dir = newIdx >= oldIdx ? 1 : -1;
             }
-            if (oldView === 'home') dir = 1; // 從首頁進入，強制作往左推入
+            if (oldView === 'home') dir = 1;
             
             gsap.to(oldEl, { xPercent: -100 * dir, duration: 0.38, ease: "power2.inOut", onComplete: () => { oldEl.classList.add('hidden'); gsap.set(oldEl, {clearProps: "all"}); } });
             gsap.fromTo(newEl, { xPercent: 100 * dir }, { xPercent: 0, duration: 0.38, ease: "power2.inOut" });
@@ -1580,7 +1550,6 @@
           }
         }
 
-        // 更新底欄高亮
         ['yarns', 'library', 'gallery', 'chronometer'].forEach(v => {
           const btn = document.getElementById(`tabBtn_${v}`);
           if (btn) {
@@ -1596,8 +1565,6 @@
         if (viewName === 'home') {
           if (globalFab) globalFab.classList.add('hidden');
           this.renderInkText('pageTitle', '手札');
-          // 每次回首頁觸發一次 Linda 彈跳動畫
-          this.renderInkText('brandTitle', "LINDA'S HANDMADE");
         } else {
           if (globalFab) globalFab.classList.remove('hidden');
           
@@ -1625,7 +1592,7 @@
           this.renderGallery();
         } else if (viewName === 'yarns') {
           this.renderYarnCharts();
-          this.renderYarns(false); // 首次進入不使用跳動動畫
+          this.renderYarns(false);
         } else if (viewName === 'library') {
           this.renderPatterns();
         }
@@ -1651,7 +1618,6 @@
           document.getElementById('editProjectId').value = '';
           document.getElementById('modalProjectTitle').innerText = '記錄作品';
           
-          // 動態生成藝廊下拉選單
           this.populateDropdown('projectCategoryDropdown', this.customCategoryTagPool, '包包');
           this.populateDropdown('projectYarnTagDropdown', this.customYarnTagPool, '羊毛');
           
@@ -1659,7 +1625,6 @@
         }
       }
 
-      // ==================== 1. 毛線櫃 (含圓餅圖與 Flip 動態) ====================
       switchYarnChart(type) {
         this.yarnChartType = type;
         const btnC = document.getElementById('chartTab_color');
@@ -1695,7 +1660,6 @@
 
         let segments = [];
         if (this.yarnChartType === 'color') {
-          // 依 7 大莫蘭迪色卡聚合
           const colorCounts = {};
           pikminPalette.filter(p => !p.isAll).forEach(p => colorCounts[p.id] = { name: p.name, color: p.color, count: 0 });
 
@@ -1706,7 +1670,6 @@
           });
           segments = Object.values(colorCounts).filter(item => item.count > 0);
         } else {
-          // 依種類標籤聚合
           const tagCounts = {
             '羊毛': { name: '羊毛', color: '#9B83A4', count: 0 },
             '棉線': { name: '棉線', color: '#D4A373', count: 0 },
@@ -1722,7 +1685,6 @@
           segments = Object.values(tagCounts).filter(item => item.count > 0);
         }
 
-        // 繪製 SVG 甜甜圈圓餅圖
         let strokeDashOffset = 0;
         let svgHtml = '';
         segments.forEach((seg) => {
@@ -1738,7 +1700,6 @@
         });
         svg.innerHTML = svgHtml;
 
-        // 渲染右側精簡標籤
         legend.innerHTML = segments.slice(0, 4).map(seg => {
           const pct = Math.round((seg.count / totalBalls) * 100);
           return `
@@ -1853,7 +1814,6 @@
           }
         });
 
-        // 觸發分類篩選時套用 GSAP Flip 動畫
         this.renderYarns(true);
       }
 
@@ -1873,7 +1833,6 @@
           return;
         }
 
-        // 捕捉 GSAP Flip 狀態
         let flipTargets = [];
         if (useFlipAnimation && window.Flip) {
           flipTargets = this.yarnLayout === 'list' 
@@ -1929,7 +1888,6 @@
         
         container.innerHTML = htmlStr;
 
-        // 作品篩選重排 (Filterable Grid) 動態效果：約 0.6 秒
         if (useFlipAnimation && window.Flip && flipState && container.children.length > 0) {
           const newTargets = this.yarnLayout === 'list' 
             ? Array.from(container.children) 
@@ -2024,9 +1982,6 @@
         this.dispatchCloudAction('deleteYarn', { id: targetId });
       }
 
-      // ==================== 2. 織典 (原圖書館) ====================
-      
-      // 動態渲染織譜可自訂分類標籤
       renderPatternTagSelectionGroup(activeTags = []) {
         const container = document.getElementById('patternTypeSelectGroup');
         if (!container) return;
@@ -2042,7 +1997,7 @@
         const tag = input.value.trim();
         if (tag && !this.customCategoryTagPool.includes(tag)) {
           this.customCategoryTagPool.push(tag);
-          this.renderPatternTagSelectionGroup([tag]); // 自動選中新標籤
+          this.renderPatternTagSelectionGroup([tag]);
           input.value = '';
           this.showToast(`已新增標籤 #${tag}`);
         }
@@ -2131,7 +2086,7 @@
                 <div>
                   <h4 class="text-xs font-serifTitle font-bold text-morandi-900">${p.name}</h4>
                   <div class="flex items-center space-x-1.5 mt-0.5">
-                    <span class="text-[10px] font-serifBrand text-morandi-400">${p.date}</span>
+                    <span class="text-[10px] font-serifBrand text-morandi-400">${toDisplayDate(p.date)}</span>
                     ${(p.tags || []).map(t => `<span class="text-[10px] text-morandi-600 bg-morandi-100 px-2 py-0.5 rounded-full">#${t}</span>`).join('')}
                   </div>
                 </div>
@@ -2171,7 +2126,7 @@
         if (!p) return;
 
         document.getElementById('patternViewerTitle').innerText = p.name;
-        document.getElementById('patternViewerMeta').innerText = `${p.date} · ${(p.tags || []).join(' ')}`;
+        document.getElementById('patternViewerMeta').innerText = `${toDisplayDate(p.date)} · ${(p.tags || []).join(' ')}`;
         const imgEl = document.getElementById('patternViewerImg');
         if (imgEl) imgEl.src = p.image;
         this.openModal('modalPatternViewer');
@@ -2243,7 +2198,6 @@
         }
       }
 
-      // ==================== 3. 藝廊 ====================
       setGalleryLayout(mode) {
         this.galleryLayout = mode;
         const btnList = document.getElementById('layoutBtn_list');
@@ -2336,7 +2290,6 @@
         this.renderGallery();
       }
 
-      // 藝廊取消閃爍進場動畫，維持絲滑純淨渲染
       renderGallery() {
         const container = document.getElementById('galleryGroupedContainer');
         if (!container) return;
@@ -2358,7 +2311,7 @@
           });
         }
 
-        list.sort((a, b) => new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate));
+        list.sort((a, b) => new Date(toInputDate(b.endDate || b.startDate)) - new Date(toInputDate(a.endDate || a.startDate)));
 
         if (!list.length) {
           container.innerHTML = `<div class="text-xs text-morandi-400 py-12 text-center font-serifTitle">查無符合作品</div>`;
@@ -2367,8 +2320,8 @@
 
         const monthGroups = {};
         list.forEach(p => {
-          const dateObj = new Date(p.endDate || p.startDate);
-          const key = `${dateObj.getFullYear()} 年 ${dateObj.getMonth() + 1} 月`;
+          const dateObj = new Date(toInputDate(p.endDate || p.startDate));
+          const key = `${dateObj.getFullYear()} 年 ${String(dateObj.getMonth() + 1).padStart(2, '0')} 月`;
           if (!monthGroups[key]) monthGroups[key] = [];
           monthGroups[key].push(p);
         });
@@ -2394,7 +2347,7 @@
                 <div class="p-3 flex items-center justify-between">
                   <div>
                     <h4 class="text-xs font-serifTitle font-bold text-morandi-900">${p.title}</h4>
-                    <span class="text-[10px] font-serifBrand text-morandi-400">${p.startDate} ~ ${p.endDate}</span>
+                    <span class="text-[10px] font-serifBrand text-morandi-400">${toDisplayDate(p.startDate)} ~ ${toDisplayDate(p.endDate)}</span>
                   </div>
                   <div class="flex items-center space-x-1">
                     ${(p.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full inline-block shadow-inner" style="background-color: ${c}"></span>`).join('')}
@@ -2483,7 +2436,7 @@
         if (totalWidth > viewWidth && window.gsap) {
           this.carouselTween = gsap.to(wrapper, {
             x: -(totalWidth - viewWidth),
-            duration: this.projects.length * 3, // 調整至 3 秒一張
+            duration: this.projects.length * 3,
             ease: "none",
             repeat: -1,
             yoyo: true
@@ -2504,7 +2457,7 @@
         if (imgEl) imgEl.src = p.image;
         document.getElementById('detailTitle').innerText = p.title;
         document.getElementById('detailPurpose').innerText = p.purpose || '自用';
-        document.getElementById('detailDates').innerText = `${p.startDate} ~ ${p.endDate}`;
+        document.getElementById('detailDates').innerText = `${toDisplayDate(p.startDate)} ~ ${toDisplayDate(p.endDate)}`;
         document.getElementById('detailNotes').innerText = p.notes || '尚無編織心情紀錄。';
 
         const tagsContainer = document.getElementById('detailTags');
@@ -2533,8 +2486,8 @@
         document.getElementById('modalProjectTitle').innerText = '修改作品';
         document.getElementById('editProjectId').value = p.id;
         document.getElementById('projectNameInput').value = p.title;
-        document.getElementById('projectStartDate').value = p.startDate;
-        document.getElementById('projectEndDate').value = p.endDate;
+        document.getElementById('projectStartDate').value = toInputDate(p.startDate);
+        document.getElementById('projectEndDate').value = toInputDate(p.endDate);
         document.getElementById('projectNotesInput').value = p.notes || '';
         
         this.populateDropdown('projectCategoryDropdown', this.customCategoryTagPool, (p.categoryTags && p.categoryTags[0]) || '包包');
@@ -2560,7 +2513,6 @@
         this.dispatchCloudAction('deleteProject', { id: targetId });
       }
 
-      // ==================== 4. 時光儀 (取消閃爍動效，更新三張小卡) ====================
       animateChronometerEntrance() {
         this.updateStats();
       }
@@ -2591,7 +2543,7 @@
         const year = this.calendarDate.getFullYear();
         const month = this.calendarDate.getMonth();
         
-        label.innerText = `${year} 年 ${month + 1} 月`;
+        label.innerText = `${year} 年 ${String(month + 1).padStart(2, '0')} 月`;
 
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
@@ -2606,12 +2558,15 @@
         }
 
         for (let d = 1; d <= daysInMonth; d++) {
-          const currentDate = new Date(year, month, d);
-          const currentStr = currentDate.toISOString().slice(0, 10);
-          const isToday = currentStr === new Date().toISOString().slice(0, 10);
+          const currentStr = `${year}.${String(month + 1).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+          const isToday = currentStr === relDate(0);
 
-          const activeProjects = this.projects.filter(p => p.startDate <= currentStr && p.endDate >= currentStr);
-          const endingProjects = activeProjects.filter(p => p.endDate === currentStr);
+          const activeProjects = this.projects.filter(p => {
+            const s = toDisplayDate(p.startDate);
+            const e = toDisplayDate(p.endDate);
+            return s <= currentStr && e >= currentStr;
+          });
+          const endingProjects = activeProjects.filter(p => toDisplayDate(p.endDate) === currentStr);
 
           html += `<div class="bg-white h-16 border-b border-r border-morandi-100/50 p-1 flex flex-col relative overflow-hidden transition ${activeProjects.length > 0 ? 'hover:bg-morandi-50/50' : ''}">`;
           
@@ -2827,7 +2782,7 @@
                 <h5 class="text-xs font-serifTitle font-bold text-morandi-800 truncate">${p.title}</h5>
                 <div class="flex items-center space-x-1 mt-0.5">
                   ${(p.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${c}"></span>`).join('')}
-                  <span class="text-[10px] font-serifBrand text-morandi-400 ml-1">${(p.endDate || '').slice(5)}</span>
+                  <span class="text-[10px] font-serifBrand text-morandi-400 ml-1">${toDisplayDate(p.endDate || '').slice(5)}</span>
                 </div>
               </div>
             </div>
@@ -2836,7 +2791,6 @@
         container.innerHTML = htmlStr;
       }
 
-      // ==================== 照片取色與上傳管理 ====================
       handleImageUpload(event, canvasId) {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
@@ -3033,8 +2987,8 @@
       saveProject() {
         const editId = document.getElementById('editProjectId').value;
         const title = document.getElementById('projectNameInput').value || '編織作品';
-        const startDate = document.getElementById('projectStartDate').value || relDate(0);
-        const endDate = document.getElementById('projectEndDate').value || relDate(7);
+        const startDate = toDisplayDate(document.getElementById('projectStartDate').value) || relDate(0);
+        const endDate = toDisplayDate(document.getElementById('projectEndDate').value) || relDate(7);
         const notes = document.getElementById('projectNotesInput').value || '';
         const purpose = document.querySelector('input[name="projectPurpose"]:checked')?.value || '自用';
         const category = document.getElementById('projectCategorySelect').value || '包包';
@@ -3114,7 +3068,7 @@
       initStudioApp();
     }
 
-    // 註冊 PWA Service Worker (滿足瀏覽器安裝條件)
+    // 註冊 PWA Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch((err) => {
