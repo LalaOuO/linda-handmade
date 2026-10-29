@@ -1,0 +1,24 @@
+{
+"name": "Linda's Handmade · 手作毛線手札",
+"short_name": "毛線手札",
+"description": "Linda 的個人手作毛線、織典與編織作品手札",
+"start_url": "./index.html",
+"display": "standalone",
+"background_color": "#FAF7F2",
+"theme_color": "#9B83A4",
+"orientation": "portrait",
+"icons": [
+{
+"src": "https://api.iconify.design/ph:yarn-fill.svg?color=%239b83a4&width=192&height=192",
+"sizes": "192x192",
+"type": "image/svg+xml",
+"purpose": "any maskable"
+},
+{
+"src": "https://api.iconify.design/ph:yarn-fill.svg?color=%239b83a4&width=512&height=512",
+"sizes": "512x512",
+"type": "image/svg+xml",
+"purpose": "any maskable"
+}
+]
+}
