@@ -435,7 +435,7 @@
     
     <div id="modalYarnDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4"><div class="w-full sm:max-w-[390px] max-h-[92vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200"><div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100"><h3 class="text-sm font-serifTitle font-bold text-morandi-900">毛線收納</h3><button onclick="app.closeModal('modalYarnDetail')" class="text-morandi-400">✕</button></div><div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3.5 pb-10"><div class="flex items-center space-x-3.5 bg-white p-3 rounded-2xl border border-morandi-100"><img id="yarnDetailImg" src="" class="w-16 h-16 rounded-xl object-cover border border-morandi-100" onerror="handleImgFallback(this)"><div class="flex-1 min-w-0"><span id="yarnDetailBrand" class="text-[10px] font-serifBrand text-morandi-400 tracking-wider">DARUMA</span><h4 id="yarnDetailName" class="text-sm font-bold text-morandi-900 truncate">線材名稱</h4><span id="yarnDetailLoc" class="text-[10px] text-morandi-500 bg-morandi-50 px-2 py-0.5 rounded-md mt-1 inline-block">存放地點：台南</span></div></div><div><span class="text-xs text-morandi-700">色彩配置</span><div id="yarnDetailColors" class="flex gap-2 mt-1"></div></div><div><span class="text-xs text-morandi-700">種類標籤</span><div id="yarnDetailTags" class="flex flex-wrap gap-1.5 mt-1"></div></div><div class="flex gap-2 pt-3 border-t border-morandi-100"><button onclick="app.openEditYarnForm()" class="flex-1 py-2.5 rounded-2xl bg-morandi-600 text-white font-serifTitle text-xs font-semibold shadow-md active:scale-98 transition">編輯</button><button onclick="app.deleteCurrentYarn()" class="px-4 py-2.5 rounded-2xl text-rose-500 bg-white border border-rose-200 font-serifTitle text-xs font-semibold active:scale-98 transition">刪除</button></div></div></div></div>
     
-    <!-- 彈窗 3: 織譜預覽燈箱 (新增右上方編輯按鈕) -->
+    <!-- 彈窗 3: 織譜預覽燈箱 -->
     <div id="modalPatternViewer" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col justify-between p-4">
       <div class="flex items-center justify-between text-white py-2 px-2">
         <div><h3 id="patternViewerTitle" class="text-sm font-serifTitle font-bold">織譜預覽</h3><span id="patternViewerMeta" class="text-[10px] text-stone-300"></span></div>
@@ -629,7 +629,7 @@
       </div>
     </div>
     
-    <!-- 彈窗 5: 新增/編輯織譜 (包含刪除按鈕移置左下) -->
+    <!-- 彈窗 5: 新增/編輯織譜 -->
     <div id="modalAddPattern" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="w-full sm:max-w-[390px] max-h-[92vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
         <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100 bg-oat-50">
@@ -654,7 +654,7 @@
           <div class="mt-2">
             <span class="text-xs text-morandi-700 font-medium">織譜截圖照片</span>
             <input type="file" id="patternFileInput" accept="image/*" class="w-full mt-1 text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:bg-morandi-200 file:text-morandi-800" onchange="app.handlePatternImageUpload(event)">
-            <!-- 預覽圖區 (簡化版，編輯時顯示) -->
+            <!-- 預覽圖區 -->
             <img id="patternImagePreview" src="" class="w-full h-32 object-cover rounded-xl mt-2 hidden border border-morandi-200">
           </div>
           
@@ -686,7 +686,7 @@
   </div>
 
   <script>
-    // 註冊 Service Worker (GitHub Pages PWA 必要)
+    // 註冊 Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
     }
@@ -724,6 +724,10 @@
         
         this.calendarDate = new Date(); this.calendarDate.setDate(1);
         this.activeYarnId = null; this.activeProjectId = null; this.activePatternId = null;
+        
+        // 螢幕長亮 API
+        this.wakeLock = null;
+        this.wakeLockEnabled = false;
 
         this.tempColors = { yarn: [], project: [] };
         this.customYarnTagPool = this.loadLocal('tung_yarn_tags', ['純色', '漸層', '金蔥', '羊毛', '棉線']);
@@ -734,6 +738,224 @@
         this.targetColorType = 'yarn'; 
         this.deleteModeTimer = null;
       }
+
+      // ==================== 缺失的 9 個核心函式補齊 ====================
+
+      openYarnDetail(id) {
+        this.activeYarnId = id;
+        const y = this.yarns.find(item => item.id === id);
+        if (!y) return;
+        document.getElementById('yarnDetailImg').src = y.image || fallbackSvg;
+        document.getElementById('yarnDetailBrand').innerText = y.brand || '未知品牌';
+        document.getElementById('yarnDetailName').innerText = y.name || '未命名線材';
+        document.getElementById('yarnDetailLoc').innerText = '存放地點：' + (y.location || '未定');
+        document.getElementById('yarnDetailColors').innerHTML = (y.colors || []).map(c => `<span class="w-4 h-4 rounded-full border border-black/10 inline-block shadow-sm" style="background-color: ${c}"></span>`).join('');
+        document.getElementById('yarnDetailTags').innerHTML = (y.tags || []).map(t => `<span class="px-2 py-0.5 text-[10px] rounded-md bg-morandi-100 text-morandi-600">#${t}</span>`).join('');
+        this.openModal('modalYarnDetail');
+      }
+
+      openProjectDetail(id) {
+        this.activeProjectId = id;
+        const p = this.projects.find(item => item.id === id);
+        if (!p) return;
+        document.getElementById('detailImg').src = p.image || fallbackSvg;
+        document.getElementById('detailTitle').innerText = p.title || '未命名作品';
+        document.getElementById('detailPurpose').innerText = p.purpose || '自用';
+        document.getElementById('detailDates').innerText = `${formatDate(p.startDate)} ~ ${formatDate(p.endDate)}`;
+        document.getElementById('detailColors').innerHTML = (p.colors || []).map(c => `<span class="w-4 h-4 rounded-full border border-black/10 inline-block shadow-sm" style="background-color: ${c}"></span>`).join('');
+        const tags = [...(p.categoryTags || []), ...(p.yarnTags || [])];
+        document.getElementById('detailTags').innerHTML = tags.map(t => `<span class="px-2 py-0.5 text-[10px] rounded-md bg-morandi-100 text-morandi-600">#${t}</span>`).join('');
+        document.getElementById('detailNotes').innerText = p.notes || '無筆記...';
+        this.openModal('modalProjectDetail');
+      }
+
+      openPatternLightbox(id) {
+        this.activePatternId = id;
+        const p = this.patterns.find(item => item.id === id);
+        if (!p) return;
+        document.getElementById('patternViewerTitle').innerText = p.name || '織譜';
+        document.getElementById('patternViewerMeta').innerText = p.tags ? p.tags.map(t => `#${t}`).join(' ') : '';
+        document.getElementById('patternViewerImg').src = p.image || fallbackSvg;
+        this.openModal('modalPatternViewer');
+        this.initKnittingRuler();
+      }
+
+      initKnittingRuler() {
+        const ruler = document.getElementById('knittingRuler');
+        const container = document.getElementById('patternViewerContainer');
+        if (!ruler || !container) return;
+        let isDragging = false;
+        let startY = 0;
+        let startTop = parseInt(ruler.style.top || 120);
+
+        ruler.onmousedown = (e) => { isDragging = true; startY = e.clientY; startTop = parseInt(ruler.style.top || 120); };
+        window.onmousemove = (e) => { if (isDragging) { let newTop = startTop + (e.clientY - startY); ruler.style.top = Math.max(0, Math.min(newTop, container.clientHeight - 28)) + 'px'; } };
+        window.onmouseup = () => { isDragging = false; };
+
+        ruler.ontouchstart = (e) => { isDragging = true; startY = e.touches[0].clientY; startTop = parseInt(ruler.style.top || 120); };
+        window.ontouchmove = (e) => { if (isDragging) { let newTop = startTop + (e.touches[0].clientY - startY); ruler.style.top = Math.max(0, Math.min(newTop, container.clientHeight - 28)) + 'px'; } };
+        window.ontouchend = () => { isDragging = false; };
+      }
+
+      selectSearchColor(hex) {
+        if (this.selectedSearchColors.has(hex)) {
+            this.selectedSearchColors.delete(hex);
+        } else {
+            this.selectedSearchColors.add(hex);
+        }
+        document.querySelectorAll('.dock-item').forEach(btn => {
+            const color = btn.getAttribute('data-color');
+            const check = btn.querySelector('.check-mark');
+            if (this.selectedSearchColors.has(color)) {
+                btn.classList.add('color-active-glow');
+                if (check) check.classList.remove('hidden');
+            } else {
+                btn.classList.remove('color-active-glow');
+                if (check) check.classList.add('hidden');
+            }
+        });
+        this.executeSmartSearch();
+      }
+
+      addColorDot(type, hex) {
+        if (!this.tempColors[type]) this.tempColors[type] = [];
+        if (!this.tempColors[type].includes(hex) && this.tempColors[type].length < 6) {
+            this.tempColors[type].push(hex);
+        }
+        this.renderTempColorDots(type);
+      }
+
+      renderTempColorDots(type) {
+        const container = document.getElementById(`${type}SelectedColors`);
+        if (!container) return;
+        if (!this.tempColors[type] || this.tempColors[type].length === 0) {
+            container.innerHTML = '<span class="text-xs text-morandi-300">尚未選擇色調</span>';
+            return;
+        }
+        container.innerHTML = this.tempColors[type].map(c => `
+            <div class="relative group cursor-pointer" onclick="app.removeTempColor('${type}', '${c}')" title="點擊刪除">
+                <span class="w-6 h-6 rounded-full border border-black/10 inline-block shadow-sm" style="background-color: ${c}"></span>
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 text-white rounded-full flex items-center justify-center text-[8px] opacity-0 group-hover:opacity-100 transition">✕</div>
+            </div>
+        `).join('');
+      }
+
+      removeTempColor(type, hex) {
+        this.tempColors[type] = this.tempColors[type].filter(c => c !== hex);
+        this.renderTempColorDots(type);
+      }
+
+      openEditYarnForm() {
+        const y = this.yarns.find(item => item.id === this.activeYarnId);
+        if (!y) return;
+        this.closeModal('modalYarnDetail');
+        document.getElementById('modalYarnTitle').innerText = '編輯毛線';
+        document.getElementById('editYarnId').value = y.id;
+        document.getElementById('yarnBrandInput').value = y.brand || '';
+        document.getElementById('yarnNameInput').value = y.name || '';
+        document.getElementById('yarnQuantityInput').value = y.quantity || 1;
+        document.getElementById('yarnLocationInput').value = y.location || '';
+        
+        this.tempColors.yarn = y.colors ? [...y.colors] : [];
+        this.renderTempColorDots('yarn');
+        this.renderTagGroup('yarnTypeSelectGroup', this.customYarnTagPool, y.tags || [], 'yarn');
+        
+        this.tempUploadedImage.yarn = (y.image && y.image !== fallbackSvg) ? y.image : null;
+        if (this.tempUploadedImage.yarn) {
+            const img = new Image();
+            img.onload = () => { this.setupCropper(img, 'yarn'); };
+            img.src = this.tempUploadedImage.yarn;
+            document.getElementById('yarnUploadPrompt').classList.add('hidden');
+            document.getElementById('yarnImageTools').classList.remove('hidden');
+        } else {
+            this.clearCanvasImage('yarn');
+        }
+        
+        this.openModal('modalAddYarn');
+      }
+
+      editCurrentProject() {
+        const p = this.projects.find(item => item.id === this.activeProjectId);
+        if (!p) return;
+        this.closeModal('modalProjectDetail');
+        document.getElementById('modalProjectTitle').innerText = '編輯作品';
+        document.getElementById('editProjectId').value = p.id;
+        document.getElementById('projectNameInput').value = p.title || '';
+        document.getElementById('projectStartDate').value = formatDate(p.startDate) || '';
+        document.getElementById('projectEndDate').value = formatDate(p.endDate) || '';
+        document.getElementById('projectNotesInput').value = p.notes || '';
+        
+        const radios = document.getElementsByName('projectPurpose');
+        for (let i = 0; i < radios.length; i++) {
+            if (radios[i].value === p.purpose) radios[i].checked = true;
+        }
+        
+        this.tempColors.project = p.colors ? [...p.colors] : [];
+        this.renderTempColorDots('project');
+        
+        const cat = (p.categoryTags && p.categoryTags.length > 0) ? p.categoryTags[0] : '包包';
+        const yt = (p.yarnTags && p.yarnTags.length > 0) ? p.yarnTags[0] : '羊毛';
+        document.getElementById('projectCategorySelect').value = cat;
+        document.getElementById('projectYarnTagSelect').value = yt;
+        this.renderComboGroup('projectCategoryGroup', this.customCategoryTagPool, cat, 'projectCategorySelect');
+        this.renderComboGroup('projectYarnTagGroup', this.customYarnTagPool, yt, 'projectYarnTagSelect');
+        
+        this.tempUploadedImage.project = (p.image && p.image !== fallbackSvg) ? p.image : null;
+        if (this.tempUploadedImage.project) {
+            const img = new Image();
+            img.onload = () => { this.setupCropper(img, 'project'); };
+            img.src = this.tempUploadedImage.project;
+            document.getElementById('projectUploadPrompt').classList.add('hidden');
+            document.getElementById('projectImageTools').classList.remove('hidden');
+        } else {
+            this.clearCanvasImage('project');
+        }
+        
+        this.openModal('modalAddProject');
+      }
+
+      stepModalCount(delta) {
+        const input = document.getElementById('yarnQuantityInput');
+        if (!input) return;
+        let val = parseInt(input.value) || 0;
+        val += delta;
+        if (val < 1) val = 1;
+        input.value = val;
+      }
+
+      async toggleWakeLock() {
+        const btn = document.getElementById('wakeLockBtn');
+        const dot = document.getElementById('wakeLockDot');
+        const label = document.getElementById('wakeLockLabel');
+        if (!this.wakeLockEnabled) {
+            try {
+                if ('wakeLock' in navigator) {
+                    this.wakeLock = await navigator.wakeLock.request('screen');
+                    this.wakeLockEnabled = true;
+                    dot.classList.replace('bg-morandi-300', 'bg-emerald-400');
+                    label.innerText = '長亮中';
+                    btn.classList.add('border-emerald-400/50');
+                    this.showToast('螢幕長亮已開啟');
+                } else {
+                    this.showToast('您的瀏覽器不支援長亮功能');
+                }
+            } catch (err) {
+                this.showToast('無法開啟長亮');
+            }
+        } else {
+            if (this.wakeLock) {
+                await this.wakeLock.release();
+                this.wakeLock = null;
+            }
+            this.wakeLockEnabled = false;
+            dot.classList.replace('bg-emerald-400', 'bg-morandi-300');
+            label.innerText = '看譜長亮';
+            btn.classList.remove('border-emerald-400/50');
+            this.showToast('螢幕長亮已關閉');
+        }
+      }
+
+      // ==================== 原本的類別方法 ====================
 
       loadLocal(key, defaultVal) { try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : [...defaultVal]; } catch (e) { return [...defaultVal]; } }
       saveLocal(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
@@ -1365,8 +1587,6 @@
         this.renderGallery(); this.updateStats(); this.closeModal('modalAddProject');
         this.tempColors.project = []; this.renderTempColorDots('project');
       }
-
-      // ==================== 以下為介面渲染邏輯完整恢復 ====================
 
       initPikminFilterBar() {
         const bar = document.getElementById('yarnColorFilterBar');
