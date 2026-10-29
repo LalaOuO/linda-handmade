@@ -158,7 +158,7 @@
                 <i class="ph ph-yarn text-xl"></i>
               </div>
               <div class="text-left">
-                <span class="text-sm font-serifTitle font-bold text-morandi-900 tracking-widest block">毛線收納</span>
+                <span class="text-sm font-serifTitle font-bold text-morandi-900 tracking-widest block">毛線櫃</span>
               </div>
             </div>
             <svg class="w-4 h-4 text-morandi-300 group-hover:text-morandi-600 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -433,7 +433,7 @@
     <!-- 彈窗 1 & 2: 作品與毛線詳情 -->
     <div id="modalProjectDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4"><div class="w-full sm:max-w-[390px] max-h-[92vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200"><div class="relative h-64 shrink-0 bg-morandi-100"><img id="detailImg" src="" class="w-full h-full object-cover" onerror="handleImgFallback(this)"><button onclick="app.closeModal('modalProjectDetail')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-md active:scale-90"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3 pb-10"><div class="flex items-center justify-between"><span id="detailPurpose" class="px-2.5 py-0.5 rounded-full bg-morandi-100 text-morandi-800 text-[11px] font-medium font-serifTitle">自用</span><span id="detailDates" class="text-xs font-serifBrand text-morandi-500"></span></div><h2 id="detailTitle" class="text-lg font-serifTitle font-bold text-morandi-900">作品名稱</h2><div id="detailColors" class="flex gap-2"></div><div class="flex flex-wrap gap-1.5 pt-0.5" id="detailTags"></div><div class="bg-white/80 p-3.5 rounded-2xl border border-morandi-200/60 mt-1"><p id="detailNotes" class="text-xs text-morandi-800 leading-relaxed font-light whitespace-pre-wrap"></p></div><div class="flex gap-2 pt-2 border-t border-morandi-100"><button onclick="app.editCurrentProject()" class="flex-1 py-2 text-xs font-serifTitle font-semibold rounded-xl bg-morandi-100 text-morandi-800 hover:bg-morandi-200">修改</button><button onclick="app.deleteCurrentProject()" class="px-4 py-2 text-xs font-serifTitle text-rose-500 hover:bg-rose-50 rounded-xl">刪除</button></div></div></div></div>
     
-    <div id="modalYarnDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4"><div class="w-full sm:max-w-[390px] max-h-[92vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200"><div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100"><h3 class="text-sm font-serifTitle font-bold text-morandi-900">毛線收納</h3><button onclick="app.closeModal('modalYarnDetail')" class="text-morandi-400">✕</button></div><div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3.5 pb-10"><div class="flex items-center space-x-3.5 bg-white p-3 rounded-2xl border border-morandi-100"><img id="yarnDetailImg" src="" class="w-16 h-16 rounded-xl object-cover border border-morandi-100" onerror="handleImgFallback(this)"><div class="flex-1 min-w-0"><span id="yarnDetailBrand" class="text-[10px] font-serifBrand text-morandi-400 tracking-wider">DARUMA</span><h4 id="yarnDetailName" class="text-sm font-bold text-morandi-900 truncate">線材名稱</h4><span id="yarnDetailLoc" class="text-[10px] text-morandi-500 bg-morandi-50 px-2 py-0.5 rounded-md mt-1 inline-block">存放地點：台南</span></div></div><div><span class="text-xs text-morandi-700">色彩配置</span><div id="yarnDetailColors" class="flex gap-2 mt-1"></div></div><div><span class="text-xs text-morandi-700">種類標籤</span><div id="yarnDetailTags" class="flex flex-wrap gap-1.5 mt-1"></div></div><div class="flex gap-2 pt-3 border-t border-morandi-100"><button onclick="app.openEditYarnForm()" class="flex-1 py-2.5 rounded-2xl bg-morandi-600 text-white font-serifTitle text-xs font-semibold shadow-md active:scale-98 transition">編輯</button><button onclick="app.deleteCurrentYarn()" class="px-4 py-2.5 rounded-2xl text-rose-500 bg-white border border-rose-200 font-serifTitle text-xs font-semibold active:scale-98 transition">刪除</button></div></div></div></div>
+    <div id="modalYarnDetail" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4"><div class="w-full sm:max-w-[390px] max-h-[92vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200"><div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100"><h3 class="text-sm font-serifTitle font-bold text-morandi-900">毛線櫃</h3><button onclick="app.closeModal('modalYarnDetail')" class="text-morandi-400">✕</button></div><div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3.5 pb-10"><div class="flex items-center space-x-3.5 bg-white p-3 rounded-2xl border border-morandi-100"><img id="yarnDetailImg" src="" class="w-16 h-16 rounded-xl object-cover border border-morandi-100" onerror="handleImgFallback(this)"><div class="flex-1 min-w-0"><span id="yarnDetailBrand" class="text-[10px] font-serifBrand text-morandi-400 tracking-wider">DARUMA</span><h4 id="yarnDetailName" class="text-sm font-bold text-morandi-900 truncate">線材名稱</h4><span id="yarnDetailLoc" class="text-[10px] text-morandi-500 bg-morandi-50 px-2 py-0.5 rounded-md mt-1 inline-block">存放地點：台南</span></div></div><div><span class="text-xs text-morandi-700">色彩配置</span><div id="yarnDetailColors" class="flex gap-2 mt-1"></div></div><div><span class="text-xs text-morandi-700">種類標籤</span><div id="yarnDetailTags" class="flex flex-wrap gap-1.5 mt-1"></div></div><div class="flex gap-2 pt-3 border-t border-morandi-100"><button onclick="app.openEditYarnForm()" class="flex-1 py-2.5 rounded-2xl bg-morandi-600 text-white font-serifTitle text-xs font-semibold shadow-md active:scale-98 transition">編輯</button><button onclick="app.deleteCurrentYarn()" class="px-4 py-2.5 rounded-2xl text-rose-500 bg-white border border-rose-200 font-serifTitle text-xs font-semibold active:scale-98 transition">刪除</button></div></div></div></div>
     
     <!-- 彈窗 3: 織譜預覽燈箱 -->
     <div id="modalPatternViewer" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col justify-between p-4">
@@ -448,9 +448,9 @@
       <div class="text-center py-1"><span class="text-[10px] text-white/60">可上下滑動紫線引導當前編織行數</span></div>
     </div>
 
-    <!-- 自訂色相環與取色器共用模組 -->
+    <!-- 自訂色相環與取色器共用模組 (底部加大 padding 避開手機手勢條) -->
     <div id="customColorPickerModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="w-full sm:max-w-[340px] bg-white rounded-t-[32px] sm:rounded-[32px] p-5 pb-10 shadow-2xl">
+      <div class="w-full sm:max-w-[340px] bg-white rounded-t-[32px] sm:rounded-[32px] p-5 pb-[max(3rem,env(safe-area-inset-bottom))] shadow-2xl">
         <div class="flex justify-between items-center mb-4">
           <h4 class="font-serifTitle font-bold text-morandi-900 text-sm">選擇調色</h4>
           <button onclick="document.getElementById('customColorPickerModal').classList.add('hidden')" class="text-morandi-400">✕</button>
@@ -497,8 +497,8 @@
         <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3 pb-10">
           <input type="hidden" id="editYarnId" value="">
 
-          <!-- 1:1 照片裁切畫布 -->
-          <div class="relative w-full aspect-square rounded-2xl bg-morandi-100 overflow-hidden border border-dashed border-morandi-300 flex items-center justify-center touch-none" id="yarnCanvasContainer">
+          <!-- 1:1 照片裁切畫布 (加上 shrink-0 避免被壓縮變形) -->
+          <div class="relative w-full aspect-square shrink-0 rounded-2xl bg-morandi-100 overflow-hidden border border-dashed border-morandi-300 flex items-center justify-center touch-none" id="yarnCanvasContainer">
             <canvas id="yarnCanvas" class="w-full h-full object-cover"></canvas>
             <div id="yarnUploadPrompt" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-morandi-400">
               <i class="ph ph-camera text-2xl mb-1"></i>
@@ -564,7 +564,8 @@
         <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-3 pb-10">
           <input type="hidden" id="editProjectId" value="">
 
-          <div class="relative w-full aspect-square rounded-2xl bg-morandi-100 overflow-hidden border border-dashed border-morandi-300 flex items-center justify-center touch-none" id="projectCanvasContainer">
+          <!-- 1:1 照片裁切畫布 (加上 shrink-0 避免被壓縮變形) -->
+          <div class="relative w-full aspect-square shrink-0 rounded-2xl bg-morandi-100 overflow-hidden border border-dashed border-morandi-300 flex items-center justify-center touch-none" id="projectCanvasContainer">
             <canvas id="projectCanvas" class="w-full h-full object-cover"></canvas>
             <div id="projectUploadPrompt" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-morandi-400">
               <i class="ph ph-camera text-2xl mb-1"></i>
@@ -604,6 +605,10 @@
             <span class="text-xs text-morandi-700 font-medium">作品分類 (單選)</span>
             <div class="flex flex-wrap gap-1.5 mt-1.5" id="projectCategoryGroup"></div>
             <input type="hidden" id="projectCategorySelect" value="包包">
+            <div class="flex gap-2 mt-2">
+              <input type="text" id="newProjCatInput" placeholder="自訂新分類..." class="flex-1 std-input !h-8 !px-2.5">
+              <button type="button" onclick="app.addGlobalTag('projectCat')" class="px-3 h-8 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium">+ 新增</button>
+            </div>
           </div>
           
           <div class="mt-1">
@@ -737,9 +742,10 @@
         this.tempUploadedImage = { yarn: null, project: null, pattern: null };
         this.targetColorType = 'yarn'; 
         this.deleteModeTimer = null;
+        this.carouselTween = null;
       }
 
-      // ==================== 缺失的 9 個核心函式補齊 ====================
+      // ==================== 核心詳情開啟邏輯 ====================
 
       openYarnDetail(id) {
         this.activeYarnId = id;
@@ -955,7 +961,7 @@
         }
       }
 
-      // ==================== 原本的類別方法 ====================
+      // ==================== 初始化與原有的類別方法 ====================
 
       loadLocal(key, defaultVal) { try { const item = localStorage.getItem(key); return item ? JSON.parse(item) : [...defaultVal]; } catch (e) { return [...defaultVal]; } }
       saveLocal(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
@@ -974,7 +980,7 @@
         this.renderAll();
       }
 
-      // ==================== 下拉重新整理 ====================
+      // ==================== 修正過後的下拉重新整理 ====================
       initPullToRefresh() {
         const main = document.getElementById('mainContainer');
         const ptr = document.getElementById('ptrContainer');
@@ -997,6 +1003,13 @@
           if (!isPulling) return;
           const y = e.touches[0].clientY;
           const dy = y - startY;
+          
+          // 如果使用者是往上滑動（也就是頁面要往下滾動），立刻放棄下拉判斷
+          if (dy < 0) {
+            isPulling = false;
+            return;
+          }
+          
           if (dy > 0 && main.scrollTop <= 0) {
             if (e.cancelable) e.preventDefault(); 
             const pullDist = Math.min(dy * 0.4, 80);
@@ -1103,7 +1116,7 @@
           this.renderInkText('brandTitle', "LINDA'S HANDMADE");
         } else {
           if (globalFab) globalFab.classList.remove('hidden');
-          const titleMap = { yarns: '毛線收納', library: '織典', gallery: '藝廊', chronometer: '時光儀' };
+          const titleMap = { yarns: '毛線櫃', library: '織典', gallery: '藝廊', chronometer: '時光儀' };
           this.renderInkText('pageTitle', titleMap[viewName] || '手札');
           this.renderInkText('brandTitle', "LINDA'S HANDMADE");
           
@@ -1158,7 +1171,7 @@
         setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 1600);
       }
 
-      // ==================== 自訂標籤管理 ====================
+      // ==================== 自訂標籤管理 (已加入支援 ProjectCat) ====================
       renderTagGroup(containerId, tagsPool, activeTags, type) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -1195,7 +1208,12 @@
       }
 
       addGlobalTag(type) {
-        const inputId = type === 'yarn' ? 'newCustomTagInput' : 'newPatternTagInput';
+        const inputIdMap = {
+          yarn: 'newCustomTagInput',
+          category: 'newPatternTagInput',
+          projectCat: 'newProjCatInput'
+        };
+        const inputId = inputIdMap[type];
         const input = document.getElementById(inputId);
         if (!input) return;
         const tag = input.value.trim();
@@ -1211,6 +1229,11 @@
           this.saveLocal('tung_category_tags', this.customCategoryTagPool);
           this.renderTagGroup('patternTypeSelectGroup', this.customCategoryTagPool, [tag], 'category');
           this.showToast(`已新增標籤 #${tag}`);
+        } else if (type === 'projectCat' && !this.customCategoryTagPool.includes(tag)) {
+          this.customCategoryTagPool.push(tag);
+          this.saveLocal('tung_category_tags', this.customCategoryTagPool);
+          this.renderComboGroup('projectCategoryGroup', this.customCategoryTagPool, document.getElementById('projectCategorySelect').value, 'projectCategorySelect');
+          this.showToast(`已新增分類 #${tag}`);
         }
         input.value = '';
         this.initDoubleRowTagSearch(); 
@@ -1955,6 +1978,20 @@
             </div>
           </div>
         `).join('');
+
+        // 自動播放 (Auto-scroll) 輪播動畫
+        if (window.gsap && this.projects.length > 1) {
+          if (this.carouselTween) this.carouselTween.kill();
+          setTimeout(() => {
+            const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+            if (maxScroll > 0) {
+              this.carouselTween = gsap.fromTo(wrapper, 
+                { x: 0 }, 
+                { x: -maxScroll, duration: this.projects.length * 4, ease: "none", repeat: -1, yoyo: true }
+              );
+            }
+          }, 100);
+        }
       }
 
       updateStats() {
