@@ -147,39 +147,63 @@
         try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { }
       }
 
-      init()
-initLindaSignature() {
-    const container = document.getElementById('homeBrandSign');
-    if (!container) return;
+        init() {
+        try {
+          this.initLindaSignature(); // 簽名初始化
+          this.renderInkText('pageTitle', '手札');
+          this.renderInkText('brandTitle', "LINDA'S HANDMADE");
+          this.renderAll();
+          this.initPikminFilterBar();
+          this.initSearchColors();
+          this.initDoubleRowTagSearch();
+          this.renderYarnTagSelectionGroup();
+          this.initKnittingRulerDrag();
+          this.initGalleryPinchZoom();
+          this.initYarnPinchZoom();
+          this.initCustomDropdowns();
+          this.initPageSwipeGestures();
+          this.initHomeCarousel();
+          this.initPresetPalettes();
+          this.initInteractiveCanvas('yarn');
+          this.initInteractiveCanvas('project');
+        } catch (e) { 
+          console.error(e); 
+        }
+      }
 
-    // 將 "Linda" 拆為獨立字元掛上索引變數，供翻轉依序延遲使用
-    const name = "Linda";
-    container.innerHTML = name.split('').map((char, index) => 
-      `<span class="coin-char" style="--char-index: ${index};">${char}</span>`
-    ).join('');
+      initLindaSignature() {
+        const container = document.getElementById('homeBrandSign');
+        if (!container) return;
 
-    // 等待瀏覽器將自訂字體完全解碼完成後，再平滑浮現（消除正楷跳變閃爍）
-    if (document.fonts) {
-      document.fonts.ready.then(() => {
-        container.classList.add('is-ready');
-      });
-    } else {
-      container.classList.add('is-ready');
-    }
-  }
+        // 將 "Linda" 拆為獨立字元掛上索引變數，供翻轉依序延遲使用
+        const name = "Linda";
+        container.innerHTML = name.split('').map((char, index) => 
+          `<span class="coin-char" style="--char-index: ${index};">${char}</span>`
+        ).join('');
 
-  triggerLindaCoinFlip() {
-    const signEl = document.getElementById('homeBrandSign');
-    if (!signEl || signEl.classList.contains('is-flipping')) return;
+        // 等待瀏覽器將自訂字體完全解碼完成後，再平滑浮現（消除正楷跳變閃爍）
+        if (document.fonts) {
+          document.fonts.ready.then(() => {
+            container.classList.add('is-ready');
+          });
+        } else {
+          container.classList.add('is-ready');
+        }
+      }
 
-    signEl.classList.add('is-flipping');
+      triggerLindaCoinFlip() {
+        const signEl = document.getElementById('homeBrandSign');
+        if (!signEl || signEl.classList.contains('is-flipping')) return;
 
-    // 動畫完整長度約 1.8 秒，設定 2.2 秒後解除狀態（防止連點）
-    setTimeout(() => {
-      signEl.classList.remove('is-flipping');
-    }, 2200);
-  }
+        signEl.classList.add('is-flipping');
 
+        // 動畫完整長度約 1.8 秒，設定 2.2 秒後解除狀態（防止連點）
+        setTimeout(() => {
+          signEl.classList.remove('is-flipping');
+        }, 2200);
+      }
+
+        
         
         {
         try {
