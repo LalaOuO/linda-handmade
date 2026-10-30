@@ -135,6 +135,32 @@
           yarn: { img: null, scale: 1, minScale: 1, x: 0, y: 0, isEyedropper: false, pickedHex: null },
           project: { img: null, scale: 1, minScale: 1, x: 0, y: 0, isEyedropper: false, pickedHex: null }
         };
+
+
+// 自動將 "Linda" 拆解為帶有順序索引的 <span>，讓每個字能依序延遲翻轉
+initLindaSignature() {
+  const container = document.getElementById('homeBrandSign');
+  if (!container) return;
+  const name = "Linda";
+  container.innerHTML = name.split('').map((char, index) => 
+    `<span class="coin-char" style="--char-index: ${index};">${char}</span>`
+  ).join('');
+}
+
+// 觸發硬幣翻轉動畫（約 2.4 秒完整週期，自帶防連點）
+triggerLindaCoinFlip() {
+  const signEl = document.getElementById('homeBrandSign');
+  if (!signEl || signEl.classList.contains('is-flipping')) return;
+
+  signEl.classList.add('is-flipping');
+
+  // 計算整輪動畫結束時間：(5個字母-1)*0.14s + 1.25s單字長度 ≈ 1.81s，預留緩衝設定為 2.2 秒後重置
+  setTimeout(() => {
+    signEl.classList.remove('is-flipping');
+  }, 2200);
+}
+
+          
       }
 
       loadLocal(key, defaultVal) {
@@ -149,6 +175,7 @@
 
       init() {
         try {
+          this.initLindaSignature(); // <-- 加入這一行
           this.renderInkText('pageTitle', '手札');
           this.renderInkText('brandTitle', "LINDA'S HANDMADE");
           this.renderAll();
