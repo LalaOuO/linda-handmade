@@ -740,8 +740,14 @@ window.handleImgFallback = function(imgEl) {
       }
 
       initHistoryAndEdgeSwipe() {
-       window.addEventListener('popstate', (e) => {
-          // 1. 若有打開的彈窗，優先關閉彈窗
+
+      // ★ 核心修復 1：確保一進網頁，最底層永遠有一筆「首頁」的歷史標記
+        if (!history.state) {
+          history.replaceState({ view: 'home' }, '');
+        }
+
+        window.addEventListener('popstate', (e) => {
+          // 1. 若有打開的彈窗，關閉彈窗
           const openModal = document.querySelector('.fixed.inset-0:not(.hidden)');
           if (openModal) {
             openModal.classList.add('hidden');
@@ -750,7 +756,7 @@ window.handleImgFallback = function(imgEl) {
             return;
           }
 
-          // 2. 若在毛線抽屜內部，先退回毛線抽屜總覽
+          // 2. 若在毛線抽屜內部，退回毛線抽屜總覽
           if (this.currentView === 'yarns' && this.activeDrawerCategory) {
             this.activeDrawerCategory = null;
             this.renderInkText('pageTitle', '毛線手札');
@@ -758,12 +764,16 @@ window.handleImgFallback = function(imgEl) {
             return;
           }
 
-          // 3. 若在四大功能分頁（毛線/織典/藝廊/時光儀），一律平滑退回首頁
+          // 3. 若在四大功能分頁，退回首頁
           if (this.currentView !== 'home') {
             this.goHome();
+            // 補上一筆首頁狀態，防止下次再按直接退出
+            history.pushState({ view: 'home' }, '');
+            return;
           }
         });
 
+        // 螢幕左緣側滑返回 (Edge Swipe Back)
         let edgeStartX = 0, edgeStartY = 0;
         window.addEventListener('touchstart', (e) => {
           if (e.touches.length === 1) {
@@ -776,8 +786,15 @@ window.handleImgFallback = function(imgEl) {
           if (e.changedTouches.length === 1) {
             const diffX = e.changedTouches[0].clientX - edgeStartX;
             const diffY = e.changedTouches[0].clientY - edgeStartY;
+            // ★ 核心修復 2：側滑時如果是四大分頁，直接呼叫 goHome()，不要讓瀏覽器自己亂跳
             if (edgeStartX < 32 && diffX > 60 && Math.abs(diffY) < 40) {
-              history.back();
+              if (this.currentView !== 'home') {
+                if (this.currentView === 'yarns' && this.activeDrawerCategory) {
+                  this.closeYarnDrawer();
+                } else {
+                  this.goHome();
+                }
+              }
             }
           }
         }, { passive: true });
@@ -943,7 +960,11 @@ window.handleImgFallback = function(imgEl) {
         else if (viewName === 'library') this.renderPatterns();
       }
 
-      goHome() { this.navigate('home', -1); }
+      goHome() {
+        this.navigate('home', -1);
+        const homeBtn = document.getElementById('navBackBtn');
+        if (homeBtn) homeBtn.classList.add('hidden');
+      }
 
       handleGlobalFabClick() {
         if (this.currentView === 'yarns') {
