@@ -104,6 +104,10 @@
         this.selectedPikminHex = null;
 
         this.yarnLayout = 'list';
+        this.activeDrawerCategory = null; // null 表示在抽屜總覽，字串表示在該抽屜內部
+        this.defaultYarnCategories = ['牛奶棉', '羊毛', '空心棉/棉線', '特殊線材'];
+
+          
         this.yarnGridColumns = 2;
         this.yarnChartType = 'color';
         this.patternLayout = 'list';
@@ -800,6 +804,9 @@
           this.renderInkText('pageTitle', titleMap[viewName] || '手札');
           if (fabText) {
             if (viewName === 'yarns') fabText.innerText = '新增線材';
+                  if (viewName === 'yarns' && this.activeDrawerCategory) {
+                      fabText.innerText = `入櫃至 ${this.activeDrawerCategory}`;
+                        }
             if (viewName === 'library') fabText.innerText = '典藏織譜';
             if (viewName === 'gallery') fabText.innerText = '記錄作品';
             if (viewName === 'chronometer') globalFab.classList.add('hidden');
@@ -1066,96 +1073,228 @@
         });
         this.renderYarns(true);
       }
-
+        // 依當前狀態分流：顯示相簿抽屜櫃 或 顯示抽屜內部的瀑布流
       renderYarns(useFlipAnimation = false) {
-        const container = document.getElementById('yarnListContainer'); if (!container) return;
-        let list = [...this.yarns];
-        if (this.selectedPikminColorId !== 'all' && this.selectedPikminHex) list = list.filter(y => y.colors && y.colors.some(c => isSimilarFamilyColor(c, this.selectedPikminHex)));
-        list.sort((a, b) => getColorPikminScore(a.colors?.[0]) - getColorPikminScore(b.colors?.[0]));
-        if (!list.length) { container.innerHTML = `<div class="text-xs text-morandi-400 py-12 text-center font-serifTitle w-full">此色彩尚無毛線收納</div>`; return; }
+        if (!this.activeDrawerCategory) {
+          this.renderYarnDrawers();
+        } else {
+          this.renderYarnWaterfall(useFlipAnimation);
+        }
+      }
 
-        let flipTargets = [];
-        if (useFlipAnimation && window.Flip) flipTargets = this.yarnLayout === 'list' ? Array.from(container.children) : (container.firstElementChild ? Array.from(container.firstElementChild.children) : []);
-        const flipState = (flipTargets.length > 0) ? Flip.getState(flipTargets) : null;
+      // 第一層：渲染相簿抽屜網格 (牛奶棉、羊毛、空心棉、特殊線材 + 自訂)
+      renderYarnDrawers() {
+        const grid = document.getElementById('yarnDrawerGrid');
+        const waterfallSec = document.getElementById('yarnWaterfallSection');
+        const viewTitle = document.getElementById('yarnViewTitle');
+        const backBtn = document.getElementById('yarnBackToDrawersBtn');
+        const breadcrumb = document.getElementById('yarnDrawerBreadcrumb');
+        const layoutSwitch = document.getElementById('yarnLayoutSwitchGroup');
+
+        if (!grid) return;
+
+        // UI 狀態重置回總覽
+        grid.classList.remove('hidden');
+        if (waterfallSec) waterfallSec.classList.add('hidden');
+        if (viewTitle) viewTitle.classList.remove('hidden');
+        if (backBtn) backBtn.classList.add('hidden');
+        if (breadcrumb) breadcrumb.classList.add('hidden');
+        if (layoutSwitch) { layoutSwitch.classList.add('hidden'); layoutSwitch.classList.remove('flex'); }
+
+        // 整理所有存在的分類（合併預設四類與線材中自訂的分類）
+        const allCategories = new Set(this.defaultYarnCategories);
+        this.yarns.forEach(y => {
+          const cat = this.getYarnCategory(y);
+          if (cat) allCategories.add(cat);
+        });
+
+        // 小董四大主題的特徵說明
+        const categoryHints = {
+          '牛奶棉': '玩偶 · 杯墊 · 柔軟易鉤',
+          '羊毛': '保暖衣物 · 親膚圍巾',
+          '空心棉/棉線': '包包 · 置物籃 · 硬挺立體',
+          '特殊線材': '拉菲草 · 馬海毛 · 閃銀皮革'
+        };
+
+        const cardsHtml = Array.from(allCategories).map(cat => {
+          // 篩選屬於該分類的線材
+          const matchedYarns = this.yarns.filter(y => this.getYarnCategory(y) === cat);
+          const totalBalls = matchedYarns.reduce((sum, y) => sum + (Number(y.quantity) || 0), 0);
+          const coverImg = matchedYarns[0]?.image || fallbackSvg;
+          const hintText = categoryHints[cat] || `${matchedYarns.length} 款線材收藏`;
+
+          // 收集該抽屜內的色彩圓點
+          const colorSet = new Set();
+          matchedYarns.forEach(y => (y.colors || []).forEach(c => colorSet.add(c)));
+          const previewColors = Array.from(colorSet).slice(0, 4);
+
+          return `
+            <div class="drawer-album-card" onclick="app.openYarnDrawer('${cat}')">
+              <div class="drawer-cover-wrap">
+                <img src="${coverImg}" class="drawer-cover-img" onerror="app.handleImgFallback(this)">
+                <div class="drawer-cover-overlay"></div>
+                <div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-white text-[9px] font-serifBrand">
+                  ${totalBalls} 球
+                </div>
+                <div class="absolute bottom-2 left-2.5 right-2 text-white">
+                  <h4 class="text-xs font-serifTitle font-bold tracking-wider drop-shadow-sm">${cat}</h4>
+                </div>
+              </div>
+              <div class="p-2.5 flex flex-col justify-between flex-1 bg-white/80">
+                <span class="text-[9px] text-morandi-500 font-sans line-clamp-1">${hintText}</span>
+                <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-morandi-100/60">
+                  <span class="text-[9px] font-serifBrand text-morandi-400">${matchedYarns.length} 款</span>
+                  <div class="flex -space-x-1">
+                    ${previewColors.map(c => `<span class="w-2.5 h-2.5 rounded-full border border-white inline-block shadow-sm" style="background-color: ${c}"></span>`).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // 加上一個輕巧的「+ 自訂抽屜」卡片
+        const addDrawerCard = `
+          <div onclick="app.promptNewDrawerCategory()" class="drawer-album-card border-dashed border-morandi-300 bg-white/50 hover:bg-white/80 flex flex-col items-center justify-center p-6 text-center cursor-pointer min-h-[160px]">
+            <div class="w-10 h-10 rounded-full bg-morandi-100 flex items-center justify-center text-morandi-600 mb-2 shadow-sm">
+              <i class="ph ph-folder-plus text-xl"></i>
+            </div>
+            <span class="text-xs font-serifTitle font-semibold text-morandi-800">新增抽屜</span>
+            <span class="text-[9px] text-morandi-400 mt-0.5 font-sans">自訂材質專屬分類</span>
+          </div>
+        `;
+
+        grid.innerHTML = cardsHtml + addDrawerCard;
+      }
+
+      // 判斷線材歸屬哪個抽屜 (相容舊資料 tags)
+      getYarnCategory(yarn) {
+        if (yarn.category) return yarn.category;
+        const tags = yarn.tags || [];
+        if (tags.includes('牛奶棉')) return '牛奶棉';
+        if (tags.includes('羊毛')) return '羊毛';
+        if (tags.includes('空心棉') || tags.includes('棉線')) return '空心棉/棉線';
+        if (tags.some(t => ['拉菲草', '馬海毛', '金蔥', '皮革', '特殊'].includes(t))) return '特殊線材';
+        return '特殊線材';
+      }
+
+      // 開啟指定抽屜
+      openYarnDrawer(category) {
+        this.activeDrawerCategory = category;
+        this.renderYarns(true);
+      }
+
+      // 返回抽屜總覽
+      closeYarnDrawer() {
+        this.activeDrawerCategory = null;
+        this.renderYarns(true);
+      }
+
+      // 自訂新抽屜名稱
+      promptNewDrawerCategory() {
+        const name = prompt('請輸入新抽屜的分類名稱 (如：蕾絲線、毛巾線)：');
+        if (name && name.trim()) {
+          const trimmed = name.trim();
+          this.defaultYarnCategories.push(trimmed);
+          this.openYarnDrawer(trimmed);
+          this.showToast(`已建立「${trimmed}」抽屜`);
+        }
+      }
+
+      // 第二層：指定抽屜內部的線材瀑布流
+      renderYarnWaterfall(useFlipAnimation = false) {
+        const grid = document.getElementById('yarnDrawerGrid');
+        const waterfallSec = document.getElementById('yarnWaterfallSection');
+        const viewTitle = document.getElementById('yarnViewTitle');
+        const backBtn = document.getElementById('yarnBackToDrawersBtn');
+        const breadcrumb = document.getElementById('yarnDrawerBreadcrumb');
+        const layoutSwitch = document.getElementById('yarnLayoutSwitchGroup');
+        const container = document.getElementById('yarnListContainer');
+
+        if (!waterfallSec || !container) return;
+
+        // 切換顯示模式
+        if (grid) grid.classList.add('hidden');
+        waterfallSec.classList.remove('hidden');
+        if (viewTitle) viewTitle.classList.add('hidden');
+        if (backBtn) backBtn.classList.remove('hidden');
+        if (layoutSwitch) { layoutSwitch.classList.remove('hidden'); layoutSwitch.classList.add('flex'); }
+
+        const currentCat = this.activeDrawerCategory;
+        const matched = this.yarns.filter(y => this.getYarnCategory(y) === currentCat);
+        const totalBalls = matched.reduce((sum, y) => sum + (Number(y.quantity) || 0), 0);
+
+        if (breadcrumb) {
+          breadcrumb.innerText = `${currentCat} · ${totalBalls}球`;
+          breadcrumb.classList.remove('hidden');
+        }
+
+        if (!matched.length) {
+          container.innerHTML = `
+            <div class="text-xs text-morandi-400 py-16 text-center font-serifTitle w-full flex flex-col items-center">
+              <i class="ph ph-yarn text-3xl text-morandi-300 mb-2"></i>
+              這個抽屜目前還是空的喔
+              <button onclick="app.openModal('modalAddYarn')" class="mt-3 px-3 py-1.5 rounded-xl bg-morandi-600 text-white text-[11px] font-sans shadow-sm">+ 入櫃第一球線材</button>
+            </div>`;
+          return;
+        }
+
         let htmlStr = '';
-
         if (this.yarnLayout === 'list') {
-          htmlStr = list.map(y => `
+          htmlStr = matched.map(y => `
             <div data-flip-id="y_${y.id}" class="flip-item p-3 rounded-2xl glass-panel shadow-sm flex items-center justify-between cursor-pointer transition active:scale-[0.985] group w-full" onclick="app.openYarnDetail('${y.id}')">
               <div class="flex items-center space-x-3 min-w-0">
                 <img src="${y.image}" alt="${y.name}" class="w-12 h-12 rounded-xl object-cover shrink-0 border border-morandi-100 shadow-sm" onerror="app.handleImgFallback(this)">
                 <div class="min-w-0 flex-1">
-                  <span class="text-[9px] font-serifBrand text-morandi-400 tracking-wider block uppercase">${y.brand}</span>
-                  <h4 class="text-xs font-serifTitle font-bold text-morandi-900 truncate">${y.name}</h4>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-[9px] font-serifBrand text-morandi-400 tracking-wider block uppercase">${y.brand}</span>
+                    <span class="text-[9px] text-morandi-500 bg-morandi-100/70 px-1.5 py-0.2 rounded-md font-sans">${y.location || '台南'}${y.storageBox ? ' · ' + y.storageBox : ''}</span>
+                  </div>
+                  <h4 class="text-xs font-serifTitle font-bold text-morandi-900 truncate mt-0.5">${y.name}</h4>
                   <div class="flex items-center space-x-1.5 mt-1">
                     <div class="flex -space-x-1">${(y.colors || []).map(c => `<span class="w-2.5 h-2.5 rounded-full border border-white inline-block shadow-sm" style="background-color: ${c}"></span>`).join('')}</div>
                     <div class="flex gap-1 overflow-hidden">${(y.tags || []).slice(0, 2).map(t => `<span class="text-[9px] text-morandi-500">#${t}</span>`).join('')}</div>
                   </div>
                 </div>
               </div>
-              <div class="shrink-0 pl-2"><span class="text-xs font-serifBrand font-semibold px-2.5 py-1 rounded-full bg-morandi-100/90 text-morandi-800 border border-morandi-200/50 shadow-sm">${y.quantity} 球</span></div>
+              <div class="shrink-0 pl-2 flex items-center space-x-1" onclick="event.stopPropagation()">
+                <button type="button" onclick="app.quickUpdateYarnQty('${y.id}', -1, event)" class="w-6 h-6 rounded-full bg-morandi-100 hover:bg-morandi-200 text-morandi-700 flex items-center justify-center text-xs font-bold transition active:scale-90">-</button>
+                <span class="text-xs font-serifBrand font-semibold px-2 py-0.5 rounded-lg bg-morandi-50/80 text-morandi-900 border border-morandi-200/60 min-w-[34px] text-center">${y.quantity}</span>
+                <button type="button" onclick="app.quickUpdateYarnQty('${y.id}', 1, event)" class="w-6 h-6 rounded-full bg-morandi-100 hover:bg-morandi-200 text-morandi-700 flex items-center justify-center text-xs font-bold transition active:scale-90">+</button>
+              </div>
             </div>
           `).join('');
         } else {
-          const gridClassMap = { 2: 'grid grid-cols-2 gap-2.5', 3: 'grid grid-cols-3 gap-1.5', 4: 'grid grid-cols-4 gap-1' };
-          htmlStr = `<div class="${gridClassMap[this.yarnGridColumns] || 'grid grid-cols-2 gap-2.5'} w-full">` + list.map(y => `
+          htmlStr = `<div class="grid grid-cols-2 gap-2.5 w-full">` + matched.map(y => `
             <div data-flip-id="y_${y.id}" class="flip-item glass-panel rounded-2xl overflow-hidden shadow-sm cursor-pointer transition active:scale-[0.98] group flex flex-col w-full" onclick="app.openYarnDetail('${y.id}')">
               <div class="aspect-square bg-morandi-100 overflow-hidden relative">
                 <img src="${y.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="app.handleImgFallback(this)">
-                <div class="absolute bottom-1 right-1 bg-white/80 backdrop-blur-md px-1.5 py-0.5 rounded text-[8px] font-bold text-morandi-800">${y.quantity}球</div>
+                <div class="absolute bottom-1 right-1 bg-white/85 backdrop-blur-md px-1.5 py-0.5 rounded text-[8px] font-bold text-morandi-800">${y.quantity}球</div>
+                ${y.storageBox ? `<div class="absolute top-1 left-1 bg-morandi-900/60 backdrop-blur-md px-1 py-0.2 rounded text-[7px] text-white font-sans">${y.storageBox}</div>` : ''}
               </div>
-              ${this.yarnGridColumns <= 2 ? `<div class="p-2"><h4 class="text-[10px] font-serifTitle font-bold text-morandi-900 truncate">${y.name}</h4><div class="flex items-center space-x-1 mt-1">${(y.colors || []).map(c => `<span class="w-2 h-2 rounded-full border border-black/10 inline-block" style="background-color: ${c}"></span>`).join('')}</div></div>` : ''}
+              <div class="p-2">
+                <h4 class="text-[10px] font-serifTitle font-bold text-morandi-900 truncate">${y.name}</h4>
+                <div class="flex items-center space-x-1 mt-1">${(y.colors || []).map(c => `<span class="w-2 h-2 rounded-full border border-black/10 inline-block" style="background-color: ${c}"></span>`).join('')}</div>
+              </div>
             </div>
           `).join('') + `</div>`;
         }
-        
+
         container.innerHTML = htmlStr;
-        if (useFlipAnimation && window.Flip && flipState && container.children.length > 0) {
-          const newTargets = this.yarnLayout === 'list' ? Array.from(container.children) : Array.from(container.firstElementChild.children);
-          Flip.from(flipState, { targets: newTargets, duration: 0.6, ease: "power2.out", absolute: true, onEnter: elements => gsap.fromTo(elements, { opacity: 0, scale: 0.75 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }), onLeave: elements => gsap.to(elements, { opacity: 0, scale: 0.6, duration: 0.35, ease: "power2.in" }) });
-        }
       }
 
-      openYarnDetail(id) {
-        this.activeYarnId = id; const yarn = this.yarns.find(y => y.id === id); if (!yarn) return;
-        const imgEl = document.getElementById('yarnDetailImg'); if (imgEl) imgEl.src = yarn.image;
-        document.getElementById('yarnDetailBrand').innerText = yarn.brand;
-        document.getElementById('yarnDetailName').innerText = yarn.name;
-        document.getElementById('yarnDetailLoc').innerText = `存放地點：${yarn.location || '台南'}`;
-        const colorsEl = document.getElementById('yarnDetailColors'); if (colorsEl) colorsEl.innerHTML = (yarn.colors || []).map(c => `<span class="w-5 h-5 rounded-full border border-black/10 shadow-inner" style="background-color: ${c}"></span>`).join('');
-        const tagsEl = document.getElementById('yarnDetailTags'); if (tagsEl) tagsEl.innerHTML = (yarn.tags || []).map(t => `<span class="px-2 py-0.5 rounded-lg bg-morandi-100 text-morandi-700 text-xs">#${t}</span>`).join('');
-        this.openModal('modalYarnDetail');
-      }
-
-      openEditYarnForm() {
-        const yarn = this.yarns.find(y => y.id === this.activeYarnId); if (!yarn) return;
-        this.closeModal('modalYarnDetail');
-        document.getElementById('modalYarnTitle').innerText = '編輯毛線';
-        document.getElementById('editYarnId').value = yarn.id;
-        document.getElementById('yarnBrandInput').value = yarn.brand;
-        document.getElementById('yarnNameInput').value = yarn.name;
-        document.getElementById('yarnQuantityInput').value = yarn.quantity;
-        this.setDropdownValue('yarnLocationDropdown', yarn.location || '台南');
-        this.tempColors.yarn = [...(yarn.colors || [])];
-        this.tempUploadedImage.yarn = yarn.image;
-        this.loadExistingImageToCanvas('yarn', yarn.image);
-        this.renderTempColorDots('yarn');
-        this.renderYarnTagSelectionGroup(yarn.tags);
-        this.openModal('modalAddYarn');
-      }
-
-      deleteCurrentYarn() {
-        const targetId = this.activeYarnId;
-        this.yarns = this.yarns.filter(y => y.id !== targetId);
-        this.saveLocal('tung_yarns', this.yarns);
-        this.closeModal('modalYarnDetail');
-        this.renderYarns(false);
+      // 控制庫存統計抽屜開關
+      openYarnStatsModal() {
         this.renderYarnCharts();
-        this.updateStats();
-        this.showToast('毛線已刪除');
-        this.dispatchCloudAction('deleteYarn', { id: targetId });
+        this.openModal('modalYarnStats');
       }
 
+      closeYarnStatsModal() {
+        this.closeModal('modalYarnStats');
+      }
+        
+
+        
       setPatternLayout(mode) {
         this.patternLayout = mode;
         const btnList = document.getElementById('patLayoutBtn_list'); const btnGrid = document.getElementById('patLayoutBtn_grid'); const menu = document.getElementById('patGridDensityMenu');
