@@ -1,4 +1,13 @@
 
+// ==================== 全域防破圖預設圖示 ====================
+const fallbackSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><rect width='400' height='400' fill='%23E4DAE8'/><circle cx='200' cy='200' r='65' fill='%23CFBFD5' opacity='0.5'/><text x='50%25' y='52%25' font-family='sans-serif' font-size='14' fill='%23675271' text-anchor='middle'>Linda Handmade</text></svg>";
+
+window.handleImgFallback = function(imgEl) {
+  if (!imgEl) return;
+  imgEl.onerror = null;
+  imgEl.src = fallbackSvg;
+};
+
     function relDate(daysOffset) {
       const d = new Date();
       d.setDate(d.getDate() + daysOffset);
