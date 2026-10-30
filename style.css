@@ -370,3 +370,115 @@
   background: linear-gradient(to top, rgba(52, 38, 59, 0.65) 0%, rgba(52, 38, 59, 0.15) 50%, transparent 100%);
 }
 
+
+/* ==================== 1. 無限捲動卡片牆 (Infinite Card Wall) ==================== */
+.infinite-wall-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 2px 0 6px 0;
+  /* 兩側淡出微遮罩，營造自然進出場質感 */
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+.infinite-wall-row {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+.infinite-wall-track {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  width: max-content;
+  animation: wall-marquee 28s linear infinite;
+}
+
+.infinite-wall-track.reverse {
+  animation-direction: reverse;
+}
+
+/* 滑鼠懸停或手機長按觸碰時兩排同時暫停 */
+.infinite-wall-container:hover .infinite-wall-track,
+.infinite-wall-container:active .infinite-wall-track {
+  animation-play-state: paused;
+}
+
+@keyframes wall-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.wall-mini-card {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(228, 218, 232, 0.8);
+  box-shadow: 0 4px 12px -2px rgba(103, 82, 113, 0.08);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wall-mini-card:active {
+  transform: scale(0.95);
+}
+
+/* ==================== 2. 滿版無白邊抽屜卡片 (Full-bleed Drawer) ==================== */
+.drawer-album-card-bleed {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -4px rgba(103, 82, 113, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  background-color: #E4DAE8;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
+}
+
+.drawer-album-card-bleed:active {
+  transform: scale(0.96);
+}
+
+.drawer-album-card-bleed .bleed-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-album-card-bleed:hover .bleed-img {
+  transform: scale(1.06);
+}
+
+/* 自然漸層遮罩：底部加深托出白色手寫與色票，頂部維持通透 */
+.drawer-album-card-bleed .bleed-mask {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(52, 38, 59, 0.88) 0%, rgba(52, 38, 59, 0.38) 42%, transparent 75%);
+  pointer-events: none;
+}
+
+/* ==================== 3. 三欄瀑布流排版 (Masonry Column) ==================== */
+.masonry-col-3 {
+  column-count: 3;
+  column-gap: 8px;
+  width: 100%;
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 8px;
+  transform-origin: center top;
+}
+
