@@ -1082,98 +1082,127 @@ window.handleImgFallback = function(imgEl) {
         });
         this.renderYarns(true);
       }
-        // 依當前狀態分流：顯示相簿抽屜櫃 或 顯示抽屜內部的瀑布流
+
+      // 依當前狀態分流：顯示相簿抽屜櫃 或 顯示抽屜內部的瀑布流
       renderYarns(useFlipAnimation = false) {
         if (!this.activeDrawerCategory) {
           this.renderYarnDrawers();
         } else {
-          this.renderYarnWaterfall(useFlipAnimation);
+          this.renderYarnWaterfall();
         }
       }
 
-      // 第一層：渲染相簿抽屜網格 (牛奶棉、羊毛、空心棉、特殊線材 + 自訂)
+      // 第一層：渲染相簿抽屜網格 (包含滿版卡片與頂部雙軌卡片牆)
       renderYarnDrawers() {
         const grid = document.getElementById('yarnDrawerGrid');
         const waterfallSec = document.getElementById('yarnWaterfallSection');
         const viewTitle = document.getElementById('yarnViewTitle');
         const backBtn = document.getElementById('yarnBackToDrawersBtn');
         const breadcrumb = document.getElementById('yarnDrawerBreadcrumb');
-        const layoutSwitch = document.getElementById('yarnLayoutSwitchGroup');
+        const wall = document.getElementById('yarnInfiniteWall');
 
         if (!grid) return;
 
-        // UI 狀態重置回總覽
+        // UI 狀態：顯示卡片牆與抽屜網格，隱藏第二層瀑布流
         grid.classList.remove('hidden');
+        if (wall) wall.classList.remove('hidden');
         if (waterfallSec) waterfallSec.classList.add('hidden');
         if (viewTitle) viewTitle.classList.remove('hidden');
         if (backBtn) backBtn.classList.add('hidden');
         if (breadcrumb) breadcrumb.classList.add('hidden');
-        if (layoutSwitch) { layoutSwitch.classList.add('hidden'); layoutSwitch.classList.remove('flex'); }
 
-        // 整理所有存在的分類（合併預設四類與線材中自訂的分類）
-        const allCategories = new Set(this.defaultYarnCategories);
+        // 觸發頂部雙軌無限跑馬燈卡片生成
+        this.renderInfiniteCardWall();
+
+        // 彙整抽屜分類（預設四類 + 使用者自訂）
+        const allCategories = new Set(this.defaultYarnCategories || ['牛奶棉', '羊毛', '空心棉/棉線', '特殊線材']);
         this.yarns.forEach(y => {
           const cat = this.getYarnCategory(y);
           if (cat) allCategories.add(cat);
         });
 
-        // 小董四大主題的特徵說明
-        const categoryHints = {
-          '牛奶棉': '玩偶 · 杯墊 · 柔軟易鉤',
-          '羊毛': '保暖衣物 · 親膚圍巾',
-          '空心棉/棉線': '包包 · 置物籃 · 硬挺立體',
-          '特殊線材': '拉菲草 · 馬海毛 · 閃銀皮革'
-        };
-
+        // 生成滿版無白邊抽屜卡片
         const cardsHtml = Array.from(allCategories).map(cat => {
-          // 篩選屬於該分類的線材
           const matchedYarns = this.yarns.filter(y => this.getYarnCategory(y) === cat);
           const totalBalls = matchedYarns.reduce((sum, y) => sum + (Number(y.quantity) || 0), 0);
           const coverImg = matchedYarns[0]?.image || fallbackSvg;
-          const hintText = categoryHints[cat] || `${matchedYarns.length} 款線材收藏`;
 
           // 收集該抽屜內的色彩圓點
           const colorSet = new Set();
           matchedYarns.forEach(y => (y.colors || []).forEach(c => colorSet.add(c)));
-          const previewColors = Array.from(colorSet).slice(0, 4);
+          const previewColors = Array.from(colorSet).slice(0, 5);
 
           return `
-            <div class="drawer-album-card" onclick="app.openYarnDrawer('${cat}')">
-              <div class="drawer-cover-wrap">
-                <img src="${coverImg}" class="drawer-cover-img" onerror="app.handleImgFallback(this)">
-                <div class="drawer-cover-overlay"></div>
-                <div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-white text-[9px] font-serifBrand">
-                  ${totalBalls} 球
-                </div>
-                <div class="absolute bottom-2 left-2.5 right-2 text-white">
-                  <h4 class="text-xs font-serifTitle font-bold tracking-wider drop-shadow-sm">${cat}</h4>
-                </div>
+            <div class="drawer-album-card-bleed" onclick="app.openYarnDrawer('${cat}')">
+              <img src="${coverImg}" class="bleed-img" alt="${cat}" onerror="app.handleImgFallback(this)">
+              <div class="bleed-mask"></div>
+              
+              <!-- 右上角：毛玻璃數量小膠囊 (無白邊) -->
+              <div class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-serifBrand border border-white/30 shadow-sm">
+                ${totalBalls} 球
               </div>
-              <div class="p-2.5 flex flex-col justify-between flex-1 bg-white/80">
-                <span class="text-[9px] text-morandi-500 font-sans line-clamp-1">${hintText}</span>
-                <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-morandi-100/60">
-                  <span class="text-[9px] font-serifBrand text-morandi-400">${matchedYarns.length} 款</span>
-                  <div class="flex -space-x-1">
-                    ${previewColors.map(c => `<span class="w-2.5 h-2.5 rounded-full border border-white inline-block shadow-sm" style="background-color: ${c}"></span>`).join('')}
-                  </div>
+              
+              <!-- 左下角：滿版文字與換行色票圓點 -->
+              <div class="absolute bottom-3 left-3 right-3 text-white pointer-events-none">
+                <h4 class="text-sm font-serifTitle font-bold tracking-wider drop-shadow-md leading-tight">${cat}</h4>
+                <div class="flex items-center -space-x-1 mt-1.5">
+                  ${previewColors.length ? previewColors.map(c => `
+                    <span class="w-3 h-3 rounded-full border border-white inline-block shadow-sm" style="background-color: ${c}"></span>
+                  `).join('') : '<span class="text-[9px] text-white/60 font-sans">尚無色票</span>'}
                 </div>
               </div>
             </div>
           `;
         }).join('');
 
-        // 加上一個輕巧的「+ 自訂抽屜」卡片
-        const addDrawerCard = `
-          <div onclick="app.promptNewDrawerCategory()" class="drawer-album-card border-dashed border-morandi-300 bg-white/50 hover:bg-white/80 flex flex-col items-center justify-center p-6 text-center cursor-pointer min-h-[160px]">
-            <div class="w-10 h-10 rounded-full bg-morandi-100 flex items-center justify-center text-morandi-600 mb-2 shadow-sm">
+        // 滿版新增抽屜卡片
+        const addCardHtml = `
+          <div onclick="app.promptNewDrawerCategory()" class="drawer-album-card-bleed border-2 border-dashed border-morandi-300 bg-white/40 hover:bg-white/70 flex flex-col items-center justify-center p-4 text-center cursor-pointer">
+            <div class="w-10 h-10 rounded-full bg-morandi-100 flex items-center justify-center text-morandi-600 mb-1.5 shadow-sm">
               <i class="ph ph-folder-plus text-xl"></i>
             </div>
-            <span class="text-xs font-serifTitle font-semibold text-morandi-800">新增抽屜</span>
-            <span class="text-[9px] text-morandi-400 mt-0.5 font-sans">自訂材質專屬分類</span>
+            <span class="text-xs font-serifTitle font-bold text-morandi-800">＋ 新增抽屜</span>
+            <span class="text-[8px] text-morandi-400 font-sans mt-0.5">自訂材質分類</span>
           </div>
         `;
 
-        grid.innerHTML = cardsHtml + addDrawerCard;
+        grid.innerHTML = cardsHtml + addCardHtml;
+      }
+
+      // 生成雙軌無限循環卡片牆
+      renderInfiniteCardWall() {
+        const topRow = document.getElementById('wallRowTop');
+        const bottomRow = document.getElementById('wallRowBottom');
+        if (!topRow || !bottomRow || !this.yarns.length) return;
+
+        // 當收藏較少時循環填滿軌道，確保動畫不穿幫
+        let pool = [...this.yarns];
+        while (pool.length < 6) pool = [...pool, ...this.yarns];
+
+        const half = Math.ceil(pool.length / 2);
+        const listA = pool.slice(0, half);
+        const listB = pool.slice(half);
+
+        const buildMiniCard = (y) => `
+          <div class="wall-mini-card" onclick="app.openYarnDetail('${y.id}')">
+            <img src="${y.image}" class="w-7 h-7 rounded-lg object-cover border border-morandi-100 shrink-0" onerror="app.handleImgFallback(this)">
+            <div class="flex flex-col text-left min-w-0">
+              <span class="text-[10px] font-serifTitle font-bold text-morandi-900 truncate max-w-[84px] leading-tight">${y.name}</span>
+              <div class="flex items-center space-x-1 mt-0.5">
+                <span class="text-[8px] font-serifBrand text-morandi-500">${y.quantity}球</span>
+                <span class="w-1.5 h-1.5 rounded-full inline-block shrink-0" style="background-color: ${y.colors?.[0] || '#9B83A4'}"></span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // 上排：向左流動 (內容複製兩份接軌)
+        const innerA = listA.map(buildMiniCard).join('');
+        topRow.innerHTML = `<div class="infinite-wall-track">${innerA + innerA}</div>`;
+
+        // 下排：向右反向流動 (掛載 reverse)
+        const innerB = listB.map(buildMiniCard).join('');
+        bottomRow.innerHTML = `<div class="infinite-wall-track reverse">${innerB + innerB}</div>`;
       }
 
       // 判斷線材歸屬哪個抽屜 (相容舊資料 tags)
@@ -1186,6 +1215,7 @@ window.handleImgFallback = function(imgEl) {
         if (tags.some(t => ['拉菲草', '馬海毛', '金蔥', '皮革', '特殊'].includes(t))) return '特殊線材';
         return '特殊線材';
       }
+      
 
       // 開啟指定抽屜
       openYarnDrawer(category) {
