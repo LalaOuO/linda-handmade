@@ -1,110 +1,14 @@
-// ==================== 全域防破圖預設圖示 ====================
-const fallbackSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><rect width='400' height='400' fill='%23E4DAE8'/><circle cx='200' cy='200' r='65' fill='%23CFBFD5' opacity='0.5'/><text x='50%25' y='52%25' font-family='sans-serif' font-size='14' fill='%23675271' text-anchor='middle'>Linda Handmade</text></svg>";
+// app.js 開頭
+import { fallbackSvg, pikminPalette, morandi16, defaultYarns, defaultPatterns, defaultProjects } from './data.js';
+import { relDate, toInputDate, toDisplayDate, getColorCategory, hslToHex } from './utils.js';
 
+// 保留防破圖機制在全域 (因為 HTML 行內 onclick 會直接呼叫 window.xxx)
 window.handleImgFallback = function(imgEl) {
   if (!imgEl) return;
   imgEl.onerror = null;
   imgEl.src = fallbackSvg;
 };
 
-function relDate(daysOffset) {
-  const d = new Date();
-  d.setDate(d.getDate() + daysOffset);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${day}`;
-}
-function toInputDate(dottedStr) { return dottedStr ? dottedStr.replace(/\./g, '-') : ''; }
-function toDisplayDate(dashedStr) { return dashedStr ? dashedStr.replace(/-/g, '.') : ''; }
-
-const pikminPalette = [
-  { id: 'all', color: '#9B83A4', isAll: true, name: '全部' },
-  { id: 'c_red', color: '#C28B88', name: '赤陶紅' },
-  { id: 'c_orange', color: '#D4A373', name: '暖杏橙' },
-  { id: 'c_green', color: '#8A9A86', name: '鼠尾草綠' },
-  { id: 'c_blue', color: '#849BB0', name: '冰川藍' },
-  { id: 'c_purple', color: '#9B83A4', name: '柔薰紫' },
-  { id: 'c_gray', color: '#55505A', name: '冷炭灰' },
-  { id: 'c_white', color: '#EBE7DF', name: '燕麥白' }
-];
-
-const morandi16 = [
-  { id: 'c_pink', color: '#D8A7B1', name: '粉紅' }, { id: 'c_red', color: '#C28B88', name: '紅' },
-  { id: 'c_orange', color: '#D4A373', name: '橙' }, { id: 'c_brown', color: '#A68A6D', name: '咖啡' },
-  { id: 'c_beige', color: '#E3D5CA', name: '米黃' }, { id: 'c_yellow', color: '#E8D3A2', name: '黃' },
-  { id: 'c_white', color: '#F8F9FA', name: '白' }, { id: 'c_offwhite', color: '#EBE7DF', name: '米白' },
-  { id: 'c_lgreen', color: '#A3B19B', name: '淺綠' }, { id: 'c_dgreen', color: '#6B7A65', name: '墨綠' },
-  { id: 'c_lblue', color: '#9BB1C2', name: '淺藍' }, { id: 'c_dblue', color: '#5B6A7D', name: '深藍' },
-  { id: 'c_lpurple', color: '#C7B7CA', name: '淺紫' }, { id: 'c_dpurple', color: '#8A738F', name: '深紫' },
-  { id: 'c_gray', color: '#9CA3AF', name: '灰' }, { id: 'c_black', color: '#4B5563', name: '黑' }
-];
-
-const defaultYarns = [
-  { id: 'y1', brand: 'DARUMA', name: '柔軟細羊毛', drawer: '羊毛', acquiredDate: '2026-10', notes: '手感很好', colors: ['#9B83A4', '#C7B7CA'], tags: ['羊毛', '純色'], quantity: 4, location: '台南', image: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=500&q=80' },
-  { id: 'y2', brand: 'Hamanaka', name: '星光金蔥棉線', drawer: '特殊線材', acquiredDate: '2026-09', notes: '', colors: ['#EBE7DF', '#D4A373'], tags: ['金蔥', '棉線'], quantity: 2, location: '高雄', image: 'https://images.unsplash.com/photo-1615715616181-79e5f5f4b50c?auto=format&fit=crop&w=500&q=80' }
-];
-const defaultPatterns = [
-  { id: 'p1', name: '法式復古鬱金香肩背包', tags: ['包包'], date: relDate(-12), url: 'https://www.youtube.com', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80' }
-];
-const defaultProjects = [
-  { id: 'prj1', title: '晨霧紫雲朵托特包', startDate: relDate(-20), endDate: relDate(+5), colors: ['#9B83A4', '#D2C6D8'], yarnTags: ['羊毛'], categoryTags: ['包包'], purpose: '自用', notes: '包口加了金屬磁扣。', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=700&q=80' },
-  { id: 'prj2', title: '靜謐薰衣草手提小方包', startDate: relDate(-5), endDate: '', colors: ['#8A738F'], yarnTags: ['漸層'], categoryTags: ['包包'], purpose: '自用', notes: '手把部分還沒收尾！', image: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=700&q=80' }
-];
-
-function hexToRgb(hex) {
-  let c = (hex || '#9B83A4').replace('#', '');
-  if (c.length === 3) c = c.split('').map(x => x + x).join('');
-  const num = parseInt(c, 16) || 0;
-  return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
-}
-function rgbToHsl(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
-  let max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-  if (max !== min) {
-    let d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) { case r: h = (g - b) / d + (g < b ? 6 : 0); break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break; }
-    h /= 6;
-  }
-  return { h: h * 360, s, l };
-}
-function hslToHex(h, s, l) {
-  l /= 100;
-  const a = s * Math.min(l, 1 - l) / 100;
-  const f = n => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
-}
-function getColorPikminScore(hex) {
-  const rgb = hexToRgb(hex);
-  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-  if (hsl.s < 0.15 || hsl.l < 0.15 || hsl.l > 0.88) return 1000 + hsl.l * 100;
-  return hsl.h;
-}
-function getColorCategory(hex) {
-  if (!hex) return 'c_purple';
-  const rgb = hexToRgb(hex);
-  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-  if (hsl.l <= 0.22) return 'c_gray';
-  if (hsl.l >= 0.86 || (hsl.s <= 0.12 && hsl.l >= 0.65)) return 'c_white';
-  if (hsl.s <= 0.14) return 'c_gray';
-  const h = hsl.h;
-  if (h >= 345 || h < 18) return 'c_red';
-  if (h >= 18 && h < 55) return 'c_orange';
-  if (h >= 65 && h < 168) return 'c_green';
-  if (h >= 168 && h < 250) return 'c_blue';
-  if (h >= 250 && h < 345) return 'c_purple';
-  return 'c_purple';
-}
-function isSimilarFamilyColor(itemHex, targetHex) {
-  if (!itemHex || !targetHex) return false;
-  return getColorCategory(itemHex) === getColorCategory(targetHex);
-}
 
 class AppController {
   constructor() {
@@ -1810,12 +1714,17 @@ class AppController {
 
 function initStudioApp() {
   if (window.gsap && window.Flip) gsap.registerPlugin(Flip);
-  if (!window.app || !(window.app instanceof AppController)) { window.app = new AppController(); window.app.init(); }
+  if (!window.app || !(window.app instanceof AppController)) { 
+    window.app = new AppController(); 
+    window.app.init(); 
+  }
 }
 
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initStudioApp);
-else initStudioApp();
+// 在 Module 環境中執行初始化
+initStudioApp();
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch((err) => { console.debug('SW:', err); }); });
+  window.addEventListener('load', () => { 
+    navigator.serviceWorker.register('./sw.js').catch((err) => { console.debug('SW:', err); }); 
+  });
 }
