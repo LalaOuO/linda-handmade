@@ -888,9 +888,12 @@ window.handleImgFallback = function(imgEl) {
       }
 
       navigate(viewName, direction = 0) {
-        // ★ 新增：若切換到四大功能頁，推入歷史紀錄，讓側滑/返回鍵知道上一層是首頁
-        if (viewName !== 'home' && this.currentView !== viewName) {
-          history.pushState({ view: viewName }, '');
+        // ★ 核心修復：四大平行分頁互相切換時，用「取代」而不是「疊加」！
+        // 這樣歷史紀錄永遠只維持：[首頁, 當前分頁]
+        if (viewName !== 'home') {
+          history.replaceState({ view: viewName }, '');
+        } else {
+          history.replaceState({ view: 'home' }, '');
         }
         
         if (this.currentView === viewName) return;
@@ -962,6 +965,7 @@ window.handleImgFallback = function(imgEl) {
 
       goHome() {
         this.navigate('home', -1);
+        history.replaceState({ view: 'home' }, '');
         const homeBtn = document.getElementById('navBackBtn');
         if (homeBtn) homeBtn.classList.add('hidden');
       }
