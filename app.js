@@ -147,67 +147,9 @@
         try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { }
       }
 
-        init() {
+    init() {
         try {
-          this.initLindaSignature(); // 簽名初始化
-          this.renderInkText('pageTitle', '手札');
-          this.renderInkText('brandTitle', "LINDA'S HANDMADE");
-          this.renderAll();
-          this.initPikminFilterBar();
-          this.initSearchColors();
-          this.initDoubleRowTagSearch();
-          this.renderYarnTagSelectionGroup();
-          this.initKnittingRulerDrag();
-          this.initGalleryPinchZoom();
-          this.initYarnPinchZoom();
-          this.initCustomDropdowns();
-          this.initPageSwipeGestures();
-          this.initHomeCarousel();
-          this.initPresetPalettes();
-          this.initInteractiveCanvas('yarn');
-          this.initInteractiveCanvas('project');
-        } catch (e) { 
-          console.error(e); 
-        }
-      }
-
-      initLindaSignature() {
-        const container = document.getElementById('homeBrandSign');
-        if (!container) return;
-
-        // 將 "Linda" 拆為獨立字元掛上索引變數，供翻轉依序延遲使用
-        const name = "Linda";
-        container.innerHTML = name.split('').map((char, index) => 
-          `<span class="coin-char" style="--char-index: ${index};">${char}</span>`
-        ).join('');
-
-        // 等待瀏覽器將自訂字體完全解碼完成後，再平滑浮現（消除正楷跳變閃爍）
-        if (document.fonts) {
-          document.fonts.ready.then(() => {
-            container.classList.add('is-ready');
-          });
-        } else {
-          container.classList.add('is-ready');
-        }
-      }
-
-      triggerLindaCoinFlip() {
-        const signEl = document.getElementById('homeBrandSign');
-        if (!signEl || signEl.classList.contains('is-flipping')) return;
-
-        signEl.classList.add('is-flipping');
-
-        // 動畫完整長度約 1.8 秒，設定 2.2 秒後解除狀態（防止連點）
-        setTimeout(() => {
-          signEl.classList.remove('is-flipping');
-        }, 2200);
-      }
-
-        
-        
-        {
-        try {
-          this.initLindaSignature(); // <-- 加入這一行
+          this.initLindaSignature(); // 初始化手寫簽名
           this.renderInkText('pageTitle', '手札');
           this.renderInkText('brandTitle', "LINDA'S HANDMADE");
           this.renderAll();
@@ -228,8 +170,42 @@
           this.initInteractiveCanvas('project');
 
           this.syncFromCloud(false);
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+          console.error(e); 
+        }
       }
+
+      initLindaSignature() {
+        const container = document.getElementById('homeBrandSign');
+        if (!container) return;
+
+        const name = "Linda";
+        container.innerHTML = name.split('').map((char, index) => 
+          `<span class="coin-char" style="--char-index: ${index};">${char}</span>`
+        ).join('');
+
+        if (document.fonts) {
+          document.fonts.ready.then(() => {
+            container.classList.add('is-ready');
+          });
+        } else {
+          container.classList.add('is-ready');
+        }
+      }
+
+      triggerLindaCoinFlip() {
+        const signEl = document.getElementById('homeBrandSign');
+        if (!signEl || signEl.classList.contains('is-flipping')) return;
+
+        signEl.classList.add('is-flipping');
+
+        setTimeout(() => {
+          signEl.classList.remove('is-flipping');
+        }, 2200);
+      }
+
+
+        
 
       // ==================== 階段三：預設莫蘭迪色列與線性光譜 ====================
       initPresetPalettes() {
