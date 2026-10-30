@@ -265,6 +265,16 @@
   cursor: pointer;
   display: inline-flex;
   user-select: none;
+
+/* 關鍵防閃爍：預設先隱藏，載入完成後柔和淡入 */
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 當 JS 偵測到字體準備好，加入 is-ready 浮現 */
+#homeBrandSign.is-ready {
+  opacity: 1;
+    
 }
 
 /* 每個單字的獨立 3D 空間與自然白色陰影（帶莫蘭迪深紫底色，柔和不刺眼） */
