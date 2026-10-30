@@ -98,6 +98,9 @@ window.handleImgFallback = function(imgEl) {
 
     class AppController {
       constructor() {
+
+        this.isNavigating = false; // 切頁防重複觸發鎖
+        
         this.yarns = this.loadLocal('tung_yarns', defaultYarns);
         this.patterns = this.loadLocal('tung_patterns', defaultPatterns);
         this.projects = this.loadLocal('tung_projects', defaultProjects);
@@ -786,14 +789,10 @@ window.handleImgFallback = function(imgEl) {
           if (e.changedTouches.length === 1) {
             const diffX = e.changedTouches[0].clientX - edgeStartX;
             const diffY = e.changedTouches[0].clientY - edgeStartY;
-            // ★ 核心修復 2：側滑時如果是四大分頁，直接呼叫 goHome()，不要讓瀏覽器自己亂跳
+            // 側滑只負責發動上一頁指令，統一由 popstate 執行，避免雙重呼叫
             if (edgeStartX < 32 && diffX > 60 && Math.abs(diffY) < 40) {
-              if (this.currentView !== 'home') {
-                if (this.currentView === 'yarns' && this.activeDrawerCategory) {
-                  this.closeYarnDrawer();
-                } else {
-                  this.goHome();
-                }
+              if (this.currentView !== 'home' || (this.currentView === 'yarns' && this.activeDrawerCategory)) {
+                history.back();
               }
             }
           }
@@ -888,14 +887,21 @@ window.handleImgFallback = function(imgEl) {
       }
 
       navigate(viewName, direction = 0) {
-        // ★ 核心修復：四大平行分頁互相切換時，用「取代」而不是「疊加」！
-        // 這樣歷史紀錄永遠只維持：[首頁, 當前分頁]
+        // ★ 核心修復：如果動畫正在執行，直接忽略重複的切頁請求，防止畫面閃爍
+        if (this.isNavigating) return;
+        if (this.currentView === viewName) return;
+
+        this.isNavigating = true;
+        setTimeout(() => { this.isNavigating = false; }, 280); // 動畫結束後解鎖
+
+        // 四大平行分頁切換時使用 replaceState
         if (viewName !== 'home') {
           history.replaceState({ view: viewName }, '');
         } else {
           history.replaceState({ view: 'home' }, '');
         }
-        
+
+      
         if (this.currentView === viewName) return;
         const oldView = this.currentView;
         this.currentView = viewName;
