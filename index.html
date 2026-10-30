@@ -450,79 +450,55 @@
       </div>
     </div>
 
-    <!-- ==================== 彈窗 4: 新增/編輯毛線 (階段三 1:1 裁切與高階取色) ==================== -->
+    <!-- ==================== 彈窗 4: 新增/編輯毛線 (階段二：極簡建檔與 16 色票) ==================== -->
     <div id="modalAddYarn" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="app.exitTagEditMode()">
       <div class="w-full sm:max-w-[390px] max-h-[95vh] sm:max-h-[90vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200" onclick="event.stopPropagation()">
+        
+        <!-- 頂部標題列 -->
         <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100" onclick="app.exitTagEditMode()">
           <h3 id="modalYarnTitle" class="text-sm font-serifTitle font-bold text-morandi-800">登錄毛線</h3>
-          <button onclick="app.closeModal('modalAddYarn')" class="text-morandi-400 hover:text-morandi-700">✕</button>
+          <button onclick="app.closeModal('modalAddYarn')" class="text-morandi-400 hover:text-morandi-700 transition">✕</button>
         </div>
         
-        <div class="p-5 pb-24 overflow-y-auto no-scrollbar flex flex-col gap-3" onclick="app.exitTagEditMode()">
+        <!-- 內部滾動表單區 -->
+        <div class="p-5 pb-24 overflow-y-auto no-scrollbar flex flex-col gap-4" onclick="app.exitTagEditMode()">
           <input type="hidden" id="editYarnId" value="">
           
-          <!-- 階段三：1:1 正方形照片縮放裁切與滴管框 -->
-          <div class="w-full max-w-[240px] mx-auto">
-            <div class="relative w-full aspect-square rounded-2xl bg-morandi-100/80 overflow-hidden border border-dashed border-morandi-300 flex items-center justify-center shadow-inner select-none">
-              <canvas id="yarnCanvas" width="600" height="600" class="w-full h-full object-cover touch-none"></canvas>
+          <!-- 1. 簡化版照片上傳 (純預覽無裁切) -->
+          <div class="w-full max-w-[220px] mx-auto">
+            <div class="relative w-full aspect-square rounded-2xl bg-morandi-100/80 overflow-hidden border-2 border-dashed border-morandi-200 flex items-center justify-center shadow-inner">
               
-              <!-- 初始上傳提示 -->
-              <div id="yarnUploadPrompt" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-morandi-400">
-                <i class="ph ph-camera-plus text-3xl mb-1 text-morandi-500"></i>
+              <!-- 檔案上傳觸發區 -->
+              <input type="file" id="yarnFileInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="app.handleImageUpload(event, 'yarn')">
+              
+              <!-- 上傳提示字 -->
+              <div id="yarnUploadPrompt" class="flex flex-col items-center justify-center pointer-events-none text-morandi-400">
+                <i class="ph ph-camera text-3xl mb-1 text-morandi-500"></i>
                 <span class="text-xs font-serifTitle">點擊上傳毛線照片</span>
-                <span class="text-[9px] text-morandi-400 mt-0.5">支援雙指縮放與拖曳裁切 (1:1)</span>
               </div>
-
-              <!-- 檔案 Input (有照片時隱藏，避免阻擋縮放手勢) -->
-              <input type="file" id="yarnFileInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10" onchange="app.handleImageUpload(event, 'yarn')">
-
-              <!-- 左下角操作狀態小標籤 -->
-              <div id="yarnCropHint" class="hidden absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/45 text-white text-[9px] pointer-events-none backdrop-blur-sm z-20">
-                雙指縮放 · 單指移動
-              </div>
-
-              <!-- 右上角：刪除重傳按鈕 -->
-              <button type="button" id="yarnClearImgBtn" onclick="app.clearUploadedImage('yarn')" class="hidden absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/50 text-white hover:bg-rose-500 flex items-center justify-center backdrop-blur-md shadow-md transition active:scale-90 z-20" title="刪除並重新上傳">
-                <i class="ph ph-trash text-sm"></i>
-              </button>
-
-              <!-- 右下角：滴管按鈕 -->
-              <button type="button" id="yarnEyedropperBtn" onclick="app.activateEyedropper('yarn')" class="hidden absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 text-morandi-800 flex items-center justify-center backdrop-blur-md shadow-md border border-morandi-200 transition active:scale-90 z-20" title="點擊後拖曳吸取顏色">
-                <i class="ph ph-eyedropper text-base"></i>
-              </button>
+              
+              <!-- 圖片預覽 -->
+              <img id="yarnPreviewImg" class="absolute inset-0 w-full h-full object-cover hidden" src="" alt="預覽">
+              
+              <!-- 刪除重傳按鈕 -->
+              <button type="button" id="yarnClearImgBtn" onclick="app.clearUploadedImage('yarn')" class="hidden absolute top-2 right-2 w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center backdrop-blur-md shadow-md transition active:scale-90 z-20" title="刪除並重新上傳">✕</button>
             </div>
           </div>
 
-          <!-- 階段三：莫蘭迪預設色票 + 自訂展開線性色環 -->
+          <!-- 2. 16 色莫蘭迪雙列選色盤 -->
           <div class="bg-white/60 p-3 rounded-2xl border border-morandi-100">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-xs font-serifTitle font-semibold text-morandi-800">已選色調 <span class="text-[10px] font-normal text-morandi-400">(點擊色球可移除)</span></span>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-serifTitle font-semibold text-morandi-800">主觀色調 <span class="text-[10px] font-normal text-morandi-400">(點擊色球可移除)</span></span>
             </div>
-            <div id="yarnSelectedColors" class="flex flex-wrap gap-2 min-h-[28px] p-1.5 bg-white rounded-xl border border-morandi-100/80 mb-2.5"></div>
-
-            <!-- 預設莫蘭迪色系 + 自訂按鈕 -->
-            <div class="flex items-center justify-between gap-1 pt-1">
-              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="yarnPresetPalette"></div>
-              <button type="button" onclick="app.toggleLinearSpectrum('yarn')" class="shrink-0 px-2.5 py-1 rounded-xl bg-morandi-100 hover:bg-morandi-200 text-morandi-800 text-[10px] font-serifTitle font-semibold flex items-center gap-1 transition">
-                <i class="ph ph-sliders-horizontal text-xs"></i> 自訂
-              </button>
-            </div>
-
-            <!-- 展開式線性光譜色環 -->
-            <div id="yarnLinearSpectrum" class="hidden mt-2.5 pt-2.5 border-t border-morandi-100 flex-col gap-2">
-              <div class="flex items-center gap-2.5">
-                <span class="text-[10px] text-morandi-500 w-7 shrink-0">色相</span>
-                <input type="range" id="yarnHueSlider" min="0" max="360" value="280" class="hue-slider flex-1" oninput="app.onLinearSpectrumChange('yarn')">
-              </div>
-              <div class="flex items-center gap-2.5">
-                <span class="text-[10px] text-morandi-500 w-7 shrink-0">明暗</span>
-                <input type="range" id="yarnLightSlider" min="25" max="85" value="58" class="light-slider flex-1" oninput="app.onLinearSpectrumChange('yarn')">
-                <div id="yarnSpectrumPreview" class="w-6 h-6 rounded-full border-2 border-white shadow-sm shrink-0" style="background-color: #9B83A4;"></div>
-                <button type="button" onclick="app.confirmSpectrumColor('yarn')" class="px-2.5 py-1 rounded-lg bg-morandi-600 text-white text-[10px] font-serifTitle font-semibold shrink-0 shadow-sm active:scale-95">+ 加入</button>
-              </div>
-            </div>
+            
+            <!-- 已選顏色展示區 -->
+            <div id="yarnSelectedColors" class="flex flex-wrap gap-2 min-h-[32px] p-1.5 bg-white rounded-xl border border-morandi-100/80 mb-3"></div>
+            
+            <!-- 16 色按鈕網格 (由 JS 渲染) -->
+            <div id="yarn16ColorPalette" class="grid grid-cols-8 gap-y-2 gap-x-1 justify-items-center"></div>
           </div>
 
+          <!-- 3. 基本資訊 (品牌/名稱) -->
           <div class="grid grid-cols-2 gap-3">
             <div class="floating-field">
               <input type="text" id="yarnBrandInput" placeholder=" " class="floating-input">
@@ -536,29 +512,43 @@
             </div>
           </div>
 
-          <div class="mt-1">
-            <span class="text-xs text-morandi-700">標籤 <span class="text-[10px] text-morandi-400">(長按標籤可刪除)</span></span>
-            <div class="flex flex-wrap gap-1.5 mt-1" id="yarnTypeSelectGroup"></div>
-            <div class="flex gap-2 mt-2">
-              <input type="text" id="newCustomTagInput" placeholder="自訂新標籤..." class="flex-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
-              <button type="button" onclick="app.addGlobalTagFromInput('yarn')" class="px-3 py-1 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium">+ 新增</button>
+          <!-- 4. 進貨年月與備註 -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <span class="text-xs text-morandi-700 mb-1 block">進貨年月</span>
+              <input type="month" id="yarnAcquiredDateInput" class="w-full h-[38px] bg-white border border-morandi-200 rounded-xl px-3 py-1.5 text-xs text-morandi-800 focus:outline-none focus:border-morandi-400">
+            </div>
+            <div>
+              <span class="text-xs text-morandi-700 mb-1 block">備註 / 針號</span>
+              <input type="text" id="yarnNotesInput" placeholder="適合 5 號針..." class="w-full h-[38px] bg-white border border-morandi-200 rounded-xl px-3 py-1.5 text-xs text-morandi-800 focus:outline-none focus:border-morandi-400">
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 mt-1">
+          <!-- 5. 材質標籤 -->
+          <div>
+            <span class="text-xs text-morandi-700">材質分類 <span class="text-[10px] text-morandi-400">(長按標籤可刪除)</span></span>
+            <div class="flex flex-wrap gap-1.5 mt-1.5" id="yarnTypeSelectGroup"></div>
+            <div class="flex gap-2 mt-2">
+              <input type="text" id="newCustomTagInput" placeholder="自訂新標籤..." class="flex-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
+              <button type="button" onclick="app.addGlobalTagFromInput('yarn')" class="px-3 py-1 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium active:scale-95 transition">+ 新增</button>
+            </div>
+          </div>
+
+          <!-- 6. 數量與存放地點 -->
+          <div class="grid grid-cols-2 gap-3">
             <div>
               <span class="text-xs text-morandi-700 mb-1 block">數量 (球)</span>
               <div class="flex items-center h-[38px] bg-white/95 rounded-xl border border-morandi-200/90 overflow-hidden">
                 <button type="button" onclick="app.stepModalCount(-1)" class="w-9 h-full flex items-center justify-center text-morandi-600 font-bold hover:bg-morandi-50 active:bg-morandi-100 transition">-</button>
-                <input type="number" id="yarnQuantityInput" value="2" class="w-full h-full text-center text-xs bg-transparent focus:outline-none font-semibold text-morandi-900" min="1">
+                <input type="number" id="yarnQuantityInput" value="1" class="w-full h-full text-center text-xs bg-transparent focus:outline-none font-semibold text-morandi-900" min="1">
                 <button type="button" onclick="app.stepModalCount(1)" class="w-9 h-full flex items-center justify-center text-morandi-600 font-bold hover:bg-morandi-50 active:bg-morandi-100 transition">+</button>
               </div>
             </div>
             <div>
               <span class="text-xs text-morandi-700 mb-1 block">存放地點</span>
-              <div id="yarnLocationDropdown" class="custom-dropdown">
-                <button type="button" class="custom-dropdown-btn">
-                  <span class="custom-dropdown-label">台南</span>
+              <div id="yarnLocationDropdown" class="custom-dropdown h-[38px]">
+                <button type="button" class="custom-dropdown-btn h-full">
+                  <span class="custom-dropdown-label text-xs">台南</span>
                   <svg class="custom-dropdown-arrow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div class="custom-dropdown-menu">
@@ -570,10 +560,13 @@
             </div>
           </div>
 
-          <button onclick="app.saveYarn()" class="w-full py-2.5 mt-2 rounded-2xl bg-morandi-600 text-white font-serifTitle font-semibold text-xs shadow-md active:scale-98 transition">確認儲存</button>
+          <!-- 確認儲存按鈕 -->
+          <button onclick="app.saveYarn()" class="w-full py-2.5 mt-1 rounded-2xl bg-morandi-600 text-white font-serifTitle font-semibold text-xs shadow-md active:scale-95 transition">確認儲存</button>
         </div>
       </div>
     </div>
+
+         
 
     <!-- 彈窗 5: 新增織譜 -->
     <div id="modalAddPattern" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="app.exitTagEditMode()">
