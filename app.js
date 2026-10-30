@@ -888,23 +888,56 @@ window.handleImgFallback = function(imgEl) {
         }
       }
 
+      goHome() {
+        if (this.currentView === 'home') return;
 
+        // 1. 清除動畫與快照
+        if (window.gsap) {
+          gsap.killTweensOf('.view-section');
+          gsap.killTweensOf('#mainContainer');
+          gsap.set('.view-section', { clearProps: 'all' });
+        }
+
+        // 2. 隱藏所有分頁
+        document.querySelectorAll('.view-section').forEach(el => {
+          el.classList.add('hidden');
+          el.classList.remove('active');
+        });
+
+        // 3. 乾淨顯示首頁
+        const homeView = document.getElementById('viewHome');
+        if (homeView) {
+          homeView.classList.remove('hidden');
+          homeView.classList.add('active');
+          if (window.gsap) {
+            gsap.fromTo(homeView, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" });
+          }
+        }
+
+        // 4. 重設狀態與標題
+        this.currentView = 'home';
+        this.activeDrawerCategory = null;
+        this.renderInkText('pageTitle', "Linda's Handmade");
+
+        const homeBtn = document.getElementById('navBackBtn');
+        if (homeBtn) homeBtn.classList.add('hidden');
+        const fab = document.getElementById('globalFabContainer');
+        if (fab) fab.classList.add('hidden');
+
+        document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('text-morandi-800', 'font-bold'));
+        history.replaceState({ view: 'home' }, '');
+      }
 
       navigate(viewName, direction = 0) {
-        // 1. 如果目標是回首頁，交給 goHome 處理
         if (viewName === 'home') {
           this.goHome();
           return;
         }
 
-        // 2. 如果已經在當前分頁，不重複切換
-        if (this.currentView === viewName) return;
-
-        // 3. 切頁狀態鎖定 (短暫 0.2 秒後無條件解鎖)
+        if (this.isNavigating || this.currentView === viewName) return;
         this.isNavigating = true;
         setTimeout(() => { this.isNavigating = false; }, 200);
 
-        // 4. 更新歷史紀錄
         history.replaceState({ view: viewName }, '');
 
         const currentEl = document.getElementById(this.viewMap[this.currentView]);
@@ -914,28 +947,22 @@ window.handleImgFallback = function(imgEl) {
           return;
         }
 
-        // 顯示左上角 Home 房子按鈕
         const homeBtn = document.getElementById('navBackBtn');
         if (homeBtn) homeBtn.classList.remove('hidden');
 
-        // 顯示 FAB
         const fab = document.getElementById('globalFabContainer');
         if (fab) fab.classList.remove('hidden');
 
-        // 隱藏舊分頁
         if (currentEl) {
           currentEl.classList.add('hidden');
           currentEl.classList.remove('active');
         }
 
-        // 顯示目標分頁
         targetEl.classList.remove('hidden');
         targetEl.classList.add('active');
 
-        // 更新當前視圖名稱
         this.currentView = viewName;
 
-        // 底部導航按鈕高亮
         document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
           if (btn.dataset.target === viewName) {
             btn.classList.add('text-morandi-800', 'font-bold');
@@ -946,7 +973,6 @@ window.handleImgFallback = function(imgEl) {
           }
         });
 
-        // 觸發對應分頁的渲染
         if (viewName === 'yarns') {
           this.renderInkText('pageTitle', this.activeDrawerCategory || '毛線手札');
           this.renderYarns();
