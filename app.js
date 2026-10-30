@@ -99,7 +99,7 @@ window.handleImgFallback = function(imgEl) {
     class AppController {
       constructor() {
 
-        this.isNavigating = false; // 切頁防重複觸發鎖
+        
         
         this.yarns = this.loadLocal('tung_yarns', defaultYarns);
         this.patterns = this.loadLocal('tung_patterns', defaultPatterns);
@@ -110,6 +110,8 @@ window.handleImgFallback = function(imgEl) {
         this.globalCategoryTags = this.loadLocal('tung_global_category_tags', ['包包', '娃娃', '小物', '吊飾']);
 
         this.currentView = 'home';
+        this.isNavigating = false; // 切頁防重複觸發鎖
+        
         this.viewOrder = ['yarns', 'library', 'gallery', 'chronometer'];
         this.lastRenderedTitle = '';
         this.selectedPikminColorId = 'all';
@@ -887,20 +889,75 @@ window.handleImgFallback = function(imgEl) {
       }
 
       navigate(viewName, direction = 0) {
-        // 1. 如果目標是回首頁，直接交給精準清場的 goHome() 處理，不走左右推移動畫
+        // 1. 如果目標是回首頁，交給 goHome 處理
         if (viewName === 'home') {
           this.goHome();
           return;
         }
 
-        // 2. 如果正在切頁動畫中或已經在此分頁，直接忽略，防止畫面連點閃爍
-        if (this.isNavigating || this.currentView === viewName) return;
-        this.isNavigating = true;
-        setTimeout(() => { this.isNavigating = false; }, 300);
+        // 2. 如果已經在當前分頁，不重複切換
+        if (this.currentView === viewName) return;
 
-        // 3. 四大平行分頁切換時使用 replaceState 維持歷史紀錄乾淨
+        // 3. 切頁狀態鎖定 (短暫 0.2 秒後無條件解鎖)
+        this.isNavigating = true;
+        setTimeout(() => { this.isNavigating = false; }, 200);
+
+        // 4. 更新歷史紀錄
         history.replaceState({ view: viewName }, '');
 
+        const currentEl = document.getElementById(this.viewMap[this.currentView]);
+        const targetEl = document.getElementById(this.viewMap[viewName]);
+        if (!targetEl) {
+          this.isNavigating = false;
+          return;
+        }
+
+        // 顯示左上角 Home 房子按鈕
+        const homeBtn = document.getElementById('navBackBtn');
+        if (homeBtn) homeBtn.classList.remove('hidden');
+
+        // 顯示 FAB
+        const fab = document.getElementById('globalFabContainer');
+        if (fab) fab.classList.remove('hidden');
+
+        // 隱藏舊分頁
+        if (currentEl) {
+          currentEl.classList.add('hidden');
+          currentEl.classList.remove('active');
+        }
+
+        // 顯示目標分頁
+        targetEl.classList.remove('hidden');
+        targetEl.classList.add('active');
+
+        // 更新當前視圖名稱
+        this.currentView = viewName;
+
+        // 底部導航按鈕高亮
+        document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+          if (btn.dataset.target === viewName) {
+            btn.classList.add('text-morandi-800', 'font-bold');
+            btn.classList.remove('text-morandi-400');
+          } else {
+            btn.classList.remove('text-morandi-800', 'font-bold');
+            btn.classList.add('text-morandi-400');
+          }
+        });
+
+        // 觸發對應分頁的渲染
+        if (viewName === 'yarns') {
+          this.renderInkText('pageTitle', this.activeDrawerCategory || '毛線手札');
+          this.renderYarns();
+        } else if (viewName === 'patterns') {
+          this.renderInkText('pageTitle', '織典秘笈');
+          this.renderPatterns();
+        } else if (viewName === 'projects') {
+          this.renderInkText('pageTitle', '手作藝廊');
+          this.renderProjects();
+        } else if (viewName === 'timeline') {
+          this.renderInkText('pageTitle', '時光編織儀');
+          this.renderTimeline();
+        }
       }
 
         // ... 以下原本 navigate 的後續程式碼保持不變 ...
