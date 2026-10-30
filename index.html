@@ -144,50 +144,47 @@
       </section>
 
       <!-- 2. 毛線櫃 View -->
+
+
+      <!-- 2. 毛線櫃 View (相簿抽屜與瀑布流架構) -->
       <section id="viewYarns" class="view-section hidden flex-col gap-3.5 z-20">
-        <div class="relative w-full rounded-3xl glass-panel p-3.5 shadow-sm border border-morandi-200/80 overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span id="yarnChartTitle" class="text-xs font-serifTitle font-bold text-morandi-900">毛線庫存 · 顏色分佈</span>
-            <div class="flex items-center space-x-1">
-              <button onclick="app.switchYarnChart('color')" id="chartTab_color" class="px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-600 text-white font-semibold transition">顏色</button>
-              <button onclick="app.switchYarnChart('tag')" id="chartTab_tag" class="px-2 py-0.5 text-[9px] font-serifBrand rounded-lg bg-morandi-100 text-morandi-700 transition">種類</button>
+        
+        <!-- 頂部功能列：抽屜導航與分析按鈕 -->
+        <div class="flex items-center justify-between py-1 border-b border-morandi-100/80">
+          <div id="yarnNavLeft" class="flex items-center space-x-2">
+            <!-- 處於抽屜總覽時顯示 -->
+            <span id="yarnViewTitle" class="text-xs font-serifTitle font-bold text-morandi-900 tracking-wider">毛線相簿櫃</span>
+            
+            <!-- 進入抽屜內部時顯示的返回按鈕 -->
+            <button id="yarnBackToDrawersBtn" onclick="app.closeYarnDrawer()" class="hidden flex items-center space-x-1 text-xs text-morandi-700 bg-white/90 px-2.5 py-1 rounded-xl border border-morandi-200/70 shadow-sm active:scale-95 transition">
+              <svg class="w-3.5 h-3.5 text-morandi-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              <span class="font-serifTitle">返回抽屜</span>
+            </button>
+            <span id="yarnDrawerBreadcrumb" class="hidden text-xs font-serifTitle font-bold text-morandi-900 truncate max-w-[140px]"></span>
+          </div>
+
+          <div class="flex items-center space-x-1.5">
+            <!-- 庫存分析抽屜開關按鈕 -->
+            <button onclick="app.openYarnStatsModal()" class="flex items-center space-x-1 text-[11px] text-morandi-700 bg-white/85 px-2.5 py-1 rounded-xl border border-morandi-200/70 shadow-sm hover:bg-white active:scale-95 transition" title="檢視庫存圖表分析">
+              <i class="ph ph-chart-pie-slice text-sm text-morandi-600"></i>
+              <span class="font-serifTitle">庫存分析</span>
+            </button>
+
+            <!-- 瀑布流內部的版面切換按鈕 (只在抽屜內部顯示) -->
+            <div id="yarnLayoutSwitchGroup" class="hidden items-center space-x-1 bg-white/85 p-0.5 rounded-xl border border-morandi-200/70">
+              <button onclick="app.setYarnLayout('list')" id="yarnLayoutBtn_list" class="w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+              <button onclick="app.setYarnLayout('grid')" id="yarnLayoutBtn_grid" class="w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg></button>
             </div>
           </div>
-          <div id="yarnChartWrapper" class="flex items-center justify-between touch-pan-x cursor-grab py-1">
-            <div class="w-28 h-28 relative shrink-0 flex items-center justify-center">
-              <svg id="yarnPieSvg" class="w-full h-full -rotate-90" viewBox="0 0 36 36"></svg>
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span id="chartCenterNum" class="text-sm font-serifBrand font-bold text-morandi-900 leading-none">0</span>
-                <span class="text-[8px] text-morandi-400">總球數</span>
-              </div>
-            </div>
-            <div id="yarnChartLegend" class="flex-1 pl-3.5 flex flex-col gap-1.5 justify-center overflow-hidden"></div>
-          </div>
         </div>
 
-        <div class="flex items-center justify-between gap-2 py-0.5">
-          <div class="flex-1 overflow-x-auto no-scrollbar flex items-center space-x-2.5 py-1.5 px-0.5" id="yarnColorFilterBar"></div>
-        </div>
+        <!-- 第一層：相簿抽屜展示區 (預設顯示) -->
+        <div id="yarnDrawerGrid" class="grid grid-cols-2 gap-3 pb-6"></div>
 
-        <div class="flex items-center justify-end px-1 py-0.5 border-b border-morandi-100/80">
-          <div class="flex items-center space-x-1 bg-white/85 p-0.5 rounded-xl border border-morandi-200/70">
-            <button onclick="app.setYarnLayout('list')" id="yarnLayoutBtn_list" class="w-7 h-7 rounded-lg flex items-center justify-center bg-morandi-600 text-white shadow-sm transition" title="列表視圖">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </button>
-            <button onclick="app.toggleYarnGridDensityMenu()" id="yarnLayoutBtn_grid" class="w-7 h-7 rounded-lg flex items-center justify-center text-morandi-400 hover:text-morandi-700 transition relative" title="宮格視圖">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
-            </button>
-          </div>
+        <!-- 第二層：抽屜內的線材瀑布流 (進入抽屜時動態切換顯示) -->
+        <div id="yarnWaterfallSection" class="hidden flex-col gap-2.5 pb-6">
+          <div id="yarnListContainer" class="flex flex-col gap-2.5 touch-pan-y relative min-h-[140px]"></div>
         </div>
-
-        <div id="yarnGridDensityMenu" class="hidden flex items-center justify-end space-x-1 px-1 py-1">
-          <span class="text-[10px] text-morandi-500 font-serifBrand mr-2">宮格密度:</span>
-          <button onclick="app.setYarnGridColumns(2)" class="yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-morandi-600 text-white font-bold">2×2</button>
-          <button onclick="app.setYarnGridColumns(3)" class="yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">3×3</button>
-          <button onclick="app.setYarnGridColumns(4)" class="yarn-density-btn px-2 py-0.5 text-[10px] rounded-lg bg-white border border-morandi-200 text-morandi-700">4×4</button>
-        </div>
-
-        <div id="yarnListContainer" class="flex flex-col gap-2.5 touch-pan-y relative min-h-[140px]"></div>
       </section>
 
       <!-- 3. 織典 View -->
