@@ -1,41 +1,30 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-
   <meta charset="UTF-8">
-
-  <!-- 在 index.html 的 <head> 確保這兩行 preconnect 存在於最上方 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <!-- 如果是使用 Dancing Script 或外部字型，加上 display=block 避免預設字體穿幫 -->
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&display=block" rel="stylesheet">
-  
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Linda's Handmade · 手作毛線手札</title>
 
-  <!-- PWA 核心設定標籤（路徑改為相對路徑 ./ 避免 GitHub Pages 報錯） -->
+  <!-- PWA 設定 -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#FAF7F2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="毛線手札">
   <link rel="apple-touch-icon" href="https://api.iconify.design/ph:yarn-fill.svg?color=%239b83a4&width=192&height=192">
-  
-  <!-- Tailwind CSS CDN -->
+
+  <!-- 第三方函式庫 (Tailwind, GSAP, Icons) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- GSAP 核心庫與 Flip 動畫外掛 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Flip.min.js"></script>
-
-  <!-- Phosphor Icons (圖示庫) -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
- 
-  
-  <!-- Tailwind 擴充配置（保留在 head 中，確保樣式渲染前載入） -->
+  <!-- Google Fonts（加入 preconnect 與 display=block 防閃爍） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Serif+TC:wght@400;600;700&display=block" rel="stylesheet">
+
+  <!-- Tailwind 色彩配置 -->
   <script>
     tailwind.config = {
       theme: {
@@ -47,7 +36,7 @@
               800: '#4E3C56', 900: '#34263B',
             },
             oat: {
-              50: '#FAF7F2', 100: '#F3EDE4', 200: '#E6DCCF', 300: '#D5C5B5', stone: '#433D46',
+              50: '#FAF7F2', 100: '#F3EDE4', 200: '#E6DCCF', 300: '#D5C5B5', stone: '#433D46'
             }
           },
           fontFamily: {
@@ -58,10 +47,10 @@
           }
         }
       }
-    }
+    };
   </script>
 
-  <!-- 引入獨立的 style.css（必須加 ./ 相對路徑） -->
+  <!-- 引入獨立的 style.css -->
   <link rel="stylesheet" href="./style.css">
 </head>
 
