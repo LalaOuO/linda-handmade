@@ -30,6 +30,17 @@ window.handleImgFallback = function(imgEl) {
       { id: 'c_white', color: '#EBE7DF', name: '燕麥白' }
     ];
 
+    const morandi16 = [
+  { id: 'c_pink', color: '#D8A7B1', name: '粉紅' }, { id: 'c_red', color: '#C28B88', name: '紅' },
+  { id: 'c_orange', color: '#D4A373', name: '橙' }, { id: 'c_brown', color: '#A68A6D', name: '咖啡' },
+  { id: 'c_beige', color: '#E3D5CA', name: '米黃' }, { id: 'c_yellow', color: '#E8D3A2', name: '黃' },
+  { id: 'c_white', color: '#F8F9FA', name: '白' }, { id: 'c_offwhite', color: '#EBE7DF', name: '米白' },
+  { id: 'c_lgreen', color: '#A3B19B', name: '淺綠' }, { id: 'c_dgreen', color: '#6B7A65', name: '墨綠' },
+  { id: 'c_lblue', color: '#9BB1C2', name: '淺藍' }, { id: 'c_dblue', color: '#5B6A7D', name: '深藍' },
+  { id: 'c_lpurple', color: '#C7B7CA', name: '淺紫' }, { id: 'c_dpurple', color: '#8A738F', name: '深紫' },
+  { id: 'c_gray', color: '#9CA3AF', name: '灰' }, { id: 'c_black', color: '#4B5563', name: '黑' }
+];
+
     const defaultYarns = [
       { id: 'y1', brand: 'DARUMA', name: '柔軟細羊毛', colors: ['#9B83A4', '#C7B7CA'], tags: ['羊毛', '純色'], quantity: 4, location: '台南', image: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=500&q=80' },
       { id: 'y2', brand: 'Hamanaka', name: '星光金蔥棉線', colors: ['#EBE7DF', '#D4A373'], tags: ['金蔥', '棉線'], quantity: 2, location: '高雄', image: 'https://images.unsplash.com/photo-1615715616181-79e5f5f4b50c?auto=format&fit=crop&w=500&q=80' }
@@ -182,6 +193,7 @@ window.handleImgFallback = function(imgEl) {
 
           this.syncFromCloud(false);
           this.initPullToRefresh();
+          this.init16ColorPalette('yarn');
           this.initHistoryAndEdgeSwipe();
           
         } catch (e) { 
@@ -888,216 +900,58 @@ window.handleImgFallback = function(imgEl) {
         }
       }
 
-      goHome() {
-        if (this.currentView === 'home') return;
 
-        // 1. 清除動畫與快照
-        if (window.gsap) {
-          gsap.killTweensOf('.view-section');
-          gsap.killTweensOf('#mainContainer');
-          gsap.set('.view-section', { clearProps: 'all' });
-        }
+          goHome() {
+        if (this.currentView === 'home') return;
+        if (window.gsap) {
+          gsap.killTweensOf('.view-section');
+          gsap.killTweensOf('#mainContainer');
+          gsap.set('.view-section', { clearProps: 'all' });
+        }
+        document.querySelectorAll('.view-section').forEach(el => {
+          el.classList.add('hidden'); el.classList.remove('active');
+        });
+        const homeView = document.getElementById('viewHome');
+        if (homeView) {
+          homeView.classList.remove('hidden'); homeView.classList.add('active');
+          if (window.gsap) gsap.fromTo(homeView, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" });
+        }
+        this.currentView = 'home'; this.activeDrawerCategory = null; this.renderInkText('pageTitle', "Linda's Handmade");
+        const homeBtn = document.getElementById('navBackBtn'); if (homeBtn) homeBtn.classList.add('hidden');
+        const fab = document.getElementById('globalFabContainer'); if (fab) fab.classList.add('hidden');
+        document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('text-morandi-800', 'font-bold'));
+        history.replaceState({ view: 'home' }, '');
+      }
 
-        // 2. 隱藏所有分頁
-        document.querySelectorAll('.view-section').forEach(el => {
-          el.classList.add('hidden');
-          el.classList.remove('active');
-        });
+      navigate(viewName, direction = 0) {
+        if (viewName === 'home') { this.goHome(); return; }
+        if (this.isNavigating || this.currentView === viewName) return;
+        this.isNavigating = true; setTimeout(() => { this.isNavigating = false; }, 200);
+        history.replaceState({ view: viewName }, '');
 
-        // 3. 乾淨顯示首頁
-        const homeView = document.getElementById('viewHome');
-        if (homeView) {
-          homeView.classList.remove('hidden');
-          homeView.classList.add('active');
-          if (window.gsap) {
-            gsap.fromTo(homeView, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" });
-          }
-        }
+        const currentEl = document.getElementById(this.viewMap[this.currentView]);
+        const targetEl = document.getElementById(this.viewMap[viewName]);
+        if (!targetEl) { this.isNavigating = false; return; }
 
-        // 4. 重設狀態與標題
-        this.currentView = 'home';
-        this.activeDrawerCategory = null;
-        this.renderInkText('pageTitle', "Linda's Handmade");
+        const homeBtn = document.getElementById('navBackBtn'); if (homeBtn) homeBtn.classList.remove('hidden');
+        const fab = document.getElementById('globalFabContainer'); if (fab) fab.classList.remove('hidden');
 
-        const homeBtn = document.getElementById('navBackBtn');
-        if (homeBtn) homeBtn.classList.add('hidden');
-        const fab = document.getElementById('globalFabContainer');
-        if (fab) fab.classList.add('hidden');
+        if (currentEl) { currentEl.classList.add('hidden'); currentEl.classList.remove('active'); }
+        targetEl.classList.remove('hidden'); targetEl.classList.add('active');
+        this.currentView = viewName;
 
-        document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('text-morandi-800', 'font-bold'));
-        history.replaceState({ view: 'home' }, '');
-      }
+        document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+          if (btn.dataset.target === viewName) { btn.classList.add('text-morandi-800', 'font-bold'); btn.classList.remove('text-morandi-400'); } 
+          else { btn.classList.remove('text-morandi-800', 'font-bold'); btn.classList.add('text-morandi-400'); }
+        });
 
-      navigate(viewName, direction = 0) {
-        if (viewName === 'home') {
-          this.goHome();
-          return;
-        }
+        if (viewName === 'yarns') { this.renderInkText('pageTitle', this.activeDrawerCategory || '毛線手札'); this.renderYarns(); } 
+        else if (viewName === 'library') { this.renderInkText('pageTitle', '織典秘笈'); this.renderPatterns(); } 
+        else if (viewName === 'gallery') { this.renderInkText('pageTitle', '手作藝廊'); this.renderGallery(); } 
+        else if (viewName === 'chronometer') { this.renderInkText('pageTitle', '時光編織儀'); this.renderTimeline(); }
+      }
 
-        if (this.isNavigating || this.currentView === viewName) return;
-        this.isNavigating = true;
-        setTimeout(() => { this.isNavigating = false; }, 200);
-
-        history.replaceState({ view: viewName }, '');
-
-        const currentEl = document.getElementById(this.viewMap[this.currentView]);
-        const targetEl = document.getElementById(this.viewMap[viewName]);
-        if (!targetEl) {
-          this.isNavigating = false;
-          return;
-        }
-
-        const homeBtn = document.getElementById('navBackBtn');
-        if (homeBtn) homeBtn.classList.remove('hidden');
-
-        const fab = document.getElementById('globalFabContainer');
-        if (fab) fab.classList.remove('hidden');
-
-        if (currentEl) {
-          currentEl.classList.add('hidden');
-          currentEl.classList.remove('active');
-        }
-
-        targetEl.classList.remove('hidden');
-        targetEl.classList.add('active');
-
-        this.currentView = viewName;
-
-        document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
-          if (btn.dataset.target === viewName) {
-            btn.classList.add('text-morandi-800', 'font-bold');
-            btn.classList.remove('text-morandi-400');
-          } else {
-            btn.classList.remove('text-morandi-800', 'font-bold');
-            btn.classList.add('text-morandi-400');
-          }
-        });
-
-        if (viewName === 'yarns') {
-          this.renderInkText('pageTitle', this.activeDrawerCategory || '毛線手札');
-          this.renderYarns();
-        } else if (viewName === 'patterns') {
-          this.renderInkText('pageTitle', '織典秘笈');
-          this.renderPatterns();
-        } else if (viewName === 'projects') {
-          this.renderInkText('pageTitle', '手作藝廊');
-          this.renderProjects();
-        } else if (viewName === 'timeline') {
-          this.renderInkText('pageTitle', '時光編織儀');
-          this.renderTimeline();
-        }
-      }
-
-        // ... 以下原本 navigate 的後續程式碼保持不變 ...
-      
-        if (this.currentView === viewName) return;
-        const oldView = this.currentView;
-        this.currentView = viewName;
-        const viewMap = { home: 'viewHome', yarns: 'viewYarns', library: 'viewLibrary', gallery: 'viewGallery', chronometer: 'viewChronometer' };
-        const oldEl = document.getElementById(viewMap[oldView]);
-        const newEl = document.getElementById(viewMap[viewName]);
-        if (!newEl) return;
-        newEl.classList.remove('hidden');
-
-        const backBtn = document.getElementById('navBackBtn');
-        const bottomNav = document.getElementById('bottomNavBar');
-        this.renderInkText('brandTitle', "LINDA'S HANDMADE");
-
-        if (viewName === 'home') {
-          if (backBtn) backBtn.classList.add('hidden');
-          if (bottomNav) gsap.to(bottomNav, { y: 20, opacity: 0, duration: 0.3, onComplete: () => bottomNav.classList.add('hidden') });
-          if (window.gsap && oldEl) {
-            gsap.to(oldEl, { xPercent: 100, duration: 0.38, ease: "power2.inOut", onComplete: () => { oldEl.classList.add('hidden'); gsap.set(oldEl, {clearProps: "all"}); } });
-            gsap.fromTo(newEl, { xPercent: -100 }, { xPercent: 0, duration: 0.38, ease: "power2.inOut" });
-          } else if (oldEl) oldEl.classList.add('hidden');
-        } else {
-          if (backBtn) backBtn.classList.remove('hidden');
-          if (bottomNav) {
-            bottomNav.classList.remove('hidden');
-            if (oldView === 'home') gsap.fromTo(bottomNav, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.38, ease: "power2.out" });
-          }
-          if (window.gsap && oldEl) {
-            let dir = direction;
-            if (dir === 0) dir = this.viewOrder.indexOf(viewName) >= this.viewOrder.indexOf(oldView) ? 1 : -1;
-            if (oldView === 'home') dir = 1;
-            gsap.to(oldEl, { xPercent: -100 * dir, duration: 0.38, ease: "power2.inOut", onComplete: () => { oldEl.classList.add('hidden'); gsap.set(oldEl, {clearProps: "all"}); } });
-            gsap.fromTo(newEl, { xPercent: 100 * dir }, { xPercent: 0, duration: 0.38, ease: "power2.inOut" });
-          } else if (oldEl) oldEl.classList.add('hidden');
-        }
-
-        ['yarns', 'library', 'gallery', 'chronometer'].forEach(v => {
-          const btn = document.getElementById(`tabBtn_${v}`);
-          if (btn) btn.className = v === viewName ? 'flex flex-col items-center space-y-1 w-14 text-morandi-700 font-bold transition scale-110' : 'flex flex-col items-center space-y-1 w-14 text-morandi-400 hover:text-morandi-700 transition';
-        });
-
-        const globalFab = document.getElementById('globalFabContainer');
-        const fabText = document.getElementById('globalFabText');
-
-        if (viewName === 'home') {
-          if (globalFab) globalFab.classList.add('hidden');
-          this.renderInkText('pageTitle', '手札');
-        } else {
-          if (globalFab) globalFab.classList.remove('hidden');
-          const titleMap = { yarns: '毛線櫃', library: '織典', gallery: '藝廊', chronometer: '時光儀' };
-          this.renderInkText('pageTitle', titleMap[viewName] || '手札');
-          if (fabText) {
-            if (viewName === 'yarns') fabText.innerText = '新增線材';
-                  if (viewName === 'yarns' && this.activeDrawerCategory) {
-                      fabText.innerText = `入櫃至 ${this.activeDrawerCategory}`;
-                        }
-            if (viewName === 'library') fabText.innerText = '典藏織譜';
-            if (viewName === 'gallery') fabText.innerText = '記錄作品';
-            if (viewName === 'chronometer') globalFab.classList.add('hidden');
-          }
-        }
-
-        if (viewName === 'chronometer') { this.animateChronometerEntrance(); this.renderCalendar(); }
-        else if (viewName === 'gallery') this.renderGallery();
-        else if (viewName === 'yarns') { this.renderYarnCharts(); this.renderYarns(false); }
-        else if (viewName === 'library') this.renderPatterns();
-      }
-
-      goHome() {
-        if (this.currentView === 'home') return;
-
-        // 1. 強制終止當前畫面上所有正在跑的 GSAP 切頁動畫，避免殘影疊加
-        if (window.gsap) {
-          gsap.killTweensOf('.view-section');
-          gsap.killTweensOf('#mainContainer');
-          gsap.set('.view-section', { clearProps: 'all' });
-        }
-
-        // 2. 將所有分頁一律強制隱藏
-        document.querySelectorAll('.view-section').forEach(el => {
-          el.classList.add('hidden');
-          el.classList.remove('active');
-        });
-
-        // 3. 唯獨乾淨顯示首頁，不使用左右滑動推移
-        const homeView = document.getElementById('viewHome');
-        if (homeView) {
-          homeView.classList.remove('hidden');
-          homeView.classList.add('active');
-          if (window.gsap) {
-            gsap.fromTo(homeView, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" });
-          }
-        }
-
-        // 4. 重置導航狀態與標題
-        this.currentView = 'home';
-        this.activeDrawerCategory = null;
-        this.renderInkText('pageTitle', "Linda's Handmade");
-
-        // 5. 隱藏左上角 Home 房子按鈕與 FAB
-        const homeBtn = document.getElementById('navBackBtn');
-        if (homeBtn) homeBtn.classList.add('hidden');
-        const fab = document.getElementById('globalFabContainer');
-        if (fab) fab.classList.add('hidden');
-
-        // 6. 底部導航按鈕高亮歸位
-        document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('text-morandi-800', 'font-bold'));
-        history.replaceState({ view: 'home' }, '');
-      }
+      
 
       handleGlobalFabClick() {
         if (this.currentView === 'yarns') {
@@ -2004,108 +1858,214 @@ window.handleImgFallback = function(imgEl) {
         btn.classList.toggle('bg-morandi-100'); btn.classList.toggle('text-morandi-700');
       }
 
-      saveYarn() {
-        // 確保儲存前導出最新 1:1 裁切畫面
-        if (this.cropperState.yarn.img) this.exportCroppedImage('yarn');
+      init16ColorPalette(type) {
+        const container = document.getElementById(`${type}16ColorPalette`);
+        if (!container) return;
+        container.innerHTML = morandi16.map(p => `
+          <button type="button" onclick="app.addColorDot('${type}', '${p.color}')" class="w-7 h-7 rounded-full border border-black/10 shadow-sm shrink-0 active:scale-90 transition hover:scale-110 flex items-center justify-center text-[9px] text-white/90 font-bold tracking-tighter" style="background-color: ${p.color}; text-shadow: 0px 1px 2px rgba(0,0,0,0.3)">
+            ${p.name}
+          </button>
+        `).join('');
+      }
 
-        const editId = document.getElementById('editYarnId').value;
-        const brand = document.getElementById('yarnBrandInput').value || 'DARUMA';
-        const name = document.getElementById('yarnNameInput').value || '未命名線材';
-        const quantity = parseInt(document.getElementById('yarnQuantityInput').value || 1);
-        const location = document.getElementById('yarnLocationInput').value || '台南';
-        const tags = Array.from(document.querySelectorAll('#yarnTypeSelectGroup .tag-btn.text-white')).map(b => b.innerText);
-        const colors = this.tempColors.yarn.length ? [...this.tempColors.yarn] : ['#9B83A4'];
-        const image = this.tempUploadedImage.yarn || fallbackSvg;
-        let savedYarn = null;
+      handleImageUpload(event, type) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
 
-        if (editId) {
-          const yarn = this.yarns.find(y => y.id === editId);
-          if (yarn) {
-            yarn.brand = brand; yarn.name = name; yarn.quantity = quantity; yarn.location = location; yarn.tags = tags.length ? tags : ['純色']; yarn.colors = colors;
-            yarn.image = image;
-            savedYarn = yarn;
-          }
-          this.showToast('毛線資料已更新');
-        } else {
-          savedYarn = { id: 'y_' + Date.now(), brand, name, colors, tags: tags.length ? tags : ['純色'], quantity, location, image };
-          this.yarns.unshift(savedYarn);
-          this.showToast('毛線已入櫃');
-        }
+        // 階段二：簡化版上傳 (目前先套用於毛線)
+        if (type === 'yarn') {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              // 用離線 Canvas 將圖片縮小，防止 LocalStorage 爆滿
+              const canvas = document.createElement('canvas');
+              canvas.width = 600; canvas.height = 600;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#FAF7F2'; ctx.fillRect(0, 0, 600, 600);
+              const scale = Math.max(600 / img.width, 600 / img.height);
+              const w = img.width * scale, h = img.height * scale;
+              const x = (600 - w) / 2, y = (600 - h) / 2;
+              ctx.drawImage(img, x, y, w, h);
+              
+              this.tempUploadedImage[type] = canvas.toDataURL('image/jpeg', 0.85);
+              const previewImg = document.getElementById(`${type}PreviewImg`);
+              if (previewImg) { previewImg.src = this.tempUploadedImage[type]; previewImg.classList.remove('hidden'); }
+              document.getElementById(`${type}UploadPrompt`)?.classList.add('hidden');
+              document.getElementById(`${type}ClearImgBtn`)?.classList.remove('hidden');
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
 
-        this.saveLocal('tung_yarns', this.yarns);
-        this.renderYarns(false); this.renderYarnCharts(); this.updateStats(); this.closeModal('modalAddYarn');
-        this.tempColors.yarn = []; this.tempUploadedImage.yarn = null; this.renderTempColorDots('yarn'); document.getElementById('editYarnId').value = '';
-        if (savedYarn) this.dispatchCloudAction('saveYarn', { item: savedYarn });
-      }
+        // 原本的 1:1 裁切與畫布邏輯 (保留給作品集和織典)
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.getElementById(`${type}Canvas`);
+            if (!canvas) return;
+            canvas.width = 600; canvas.height = 600;
+            const state = this.cropperState[type];
+            if (state) {
+              state.img = img;
+              state.minScale = Math.max(600 / img.width, 600 / img.height);
+              state.scale = state.minScale;
+              state.x = (600 - img.width * state.scale) / 2;
+              state.y = (600 - img.height * state.scale) / 2;
+            }
+            this.clampAndDrawCropper(type);
+            this.exportCroppedImage(type);
+            document.getElementById(`${type}UploadPrompt`)?.classList.add('hidden');
+            document.getElementById(`${type}FileInput`)?.classList.add('hidden');
+            document.getElementById(`${type}ClearImgBtn`)?.classList.remove('hidden');
+            document.getElementById(`${type}EyedropperBtn`)?.classList.remove('hidden');
+            document.getElementById(`${type}CropHint`)?.classList.remove('hidden');
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
 
-      saveNewPattern() {
-        const name = document.getElementById('patternNameInput').value || '新織譜';
-        const url = document.getElementById('patternUrlInput').value || '';
-        const tags = Array.from(document.querySelectorAll('#patternTypeSelectGroup .tag-btn.text-white')).map(b => b.innerText);
-        const image = this.tempUploadedImage.pattern || fallbackSvg;
-        const newPattern = { id: 'p_' + Date.now(), name, tags: tags.length ? tags : ['小物'], date: relDate(0), url, image };
-        this.patterns.unshift(newPattern);
-        this.saveLocal('tung_patterns', this.patterns);
-        this.renderPatterns(); this.updateStats(); this.closeModal('modalAddPattern');
-        this.tempUploadedImage.pattern = null; this.showToast('織譜已典藏至織典');
-        this.dispatchCloudAction('savePattern', { item: newPattern });
-      }
+      clearUploadedImage(type) {
+        this.tempUploadedImage[type] = null;
+        if (type === 'yarn') {
+          const fileInput = document.getElementById(`${type}FileInput`);
+          if (fileInput) fileInput.value = '';
+          const previewImg = document.getElementById(`${type}PreviewImg`);
+          if (previewImg) { previewImg.src = ''; previewImg.classList.add('hidden'); }
+          document.getElementById(`${type}UploadPrompt`)?.classList.remove('hidden');
+          document.getElementById(`${type}ClearImgBtn`)?.classList.add('hidden');
+          return;
+        }
 
-      saveProject() {
-        // 確保儲存前導出最新 1:1 裁切畫面至 Base64 並上傳 Drive
-        if (this.cropperState.project.img) this.exportCroppedImage('project');
+        // 原本的裁切清除邏輯
+        const state = this.cropperState[type];
+        if (state) { state.img = null; state.isEyedropper = false; }
+        const canvas = document.getElementById(`${type}Canvas`);
+        if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        const fileInput = document.getElementById(`${type}FileInput`);
+        if (fileInput) { fileInput.value = ''; fileInput.classList.remove('hidden'); }
+        document.getElementById(`${type}UploadPrompt`)?.classList.remove('hidden');
+        document.getElementById(`${type}ClearImgBtn`)?.classList.add('hidden');
+        document.getElementById(`${type}EyedropperBtn`)?.classList.add('hidden');
+        document.getElementById(`${type}CropHint`)?.classList.add('hidden');
+        this.deactivateEyedropper?.(type);
+      }
 
-        const editId = document.getElementById('editProjectId').value;
-        const title = document.getElementById('projectNameInput').value || '編織作品';
-        const startDate = toDisplayDate(document.getElementById('projectStartDate').value) || relDate(0);
-        
-        const isWip = document.getElementById('projectIsWip').checked;
-        const endDate = isWip ? '' : (toDisplayDate(document.getElementById('projectEndDate').value) || relDate(7));
+      saveYarn() {
+        const editId = document.getElementById('editYarnId').value;
+        const brand = document.getElementById('yarnBrandInput').value || 'DARUMA';
+        const name = document.getElementById('yarnNameInput').value || '未命名線材';
+        const quantity = parseInt(document.getElementById('yarnQuantityInput').value || 1);
+        const location = document.getElementById('yarnLocationInput')?.value || '台南';
+        const acquiredDate = document.getElementById('yarnAcquiredDateInput')?.value || '';
+        const notes = document.getElementById('yarnNotesInput')?.value || '';
+        const tags = Array.from(document.querySelectorAll('#yarnTypeSelectGroup .tag-btn.text-white')).map(b => b.innerText);
+        const colors = this.tempColors.yarn.length ? [...this.tempColors.yarn] : ['#9B83A4'];
+        const image = this.tempUploadedImage.yarn || fallbackSvg;
+        
+        const drawer = this.activeDrawerCategory || '特殊線材';
+        let savedYarn = null;
 
-        const notes = document.getElementById('projectNotesInput').value || '';
-        const purpose = document.querySelector('input[name="projectPurpose"]:checked')?.value || '自用';
-        const category = document.getElementById('projectCategorySelect').value || '包包';
-        const yarnTag = document.getElementById('projectYarnTagSelect').value || '羊毛';
-        const colors = this.tempColors.project.length ? [...this.tempColors.project] : ['#9B83A4'];
-        const image = this.tempUploadedImage.project || fallbackSvg;
-        let savedProject = null;
+        if (editId) {
+          const yarn = this.yarns.find(y => y.id === editId);
+          if (yarn) {
+            yarn.brand = brand; yarn.name = name; yarn.quantity = quantity; yarn.location = location; 
+            yarn.acquiredDate = acquiredDate; yarn.notes = notes; yarn.drawer = drawer;
+            yarn.tags = tags.length ? tags : ['純色']; yarn.colors = colors; yarn.image = image;
+            savedYarn = yarn;
+          }
+          this.showToast('毛線資料已更新');
+        } else {
+          savedYarn = { id: 'y_' + Date.now(), brand, name, colors, drawer, acquiredDate, notes, tags: tags.length ? tags : ['純色'], quantity, location, image };
+          this.yarns.unshift(savedYarn);
+          this.showToast('毛線已入櫃');
+        }
 
-        if (editId) {
-          const prj = this.projects.find(p => p.id === editId);
-          if (prj) {
-            prj.title = title; prj.startDate = startDate; prj.endDate = endDate; prj.notes = notes; prj.purpose = purpose;
-            prj.categoryTags = [category]; prj.yarnTags = [yarnTag]; prj.colors = colors;
-            prj.image = image;
-            savedProject = prj;
-          }
-          this.showToast('作品已更新');
-        } else {
-          savedProject = {
-            id: 'prj_' + Date.now(), title, startDate, endDate, colors, yarnTags: [yarnTag], categoryTags: [category], purpose, notes, image
-          };
-          this.projects.unshift(savedProject);
-          this.showToast('作品已記錄');
-        }
+        this.saveLocal('tung_yarns', this.yarns);
+        this.renderYarns(false); 
+        this.renderYarnCharts(); 
+        this.updateStats(); 
+        this.closeModal('modalAddYarn');
+        this.tempColors.yarn = []; 
+        this.tempUploadedImage.yarn = null; 
+        this.renderTempColorDots('yarn'); 
+        document.getElementById('editYarnId').value = '';
+        if (savedYarn) this.dispatchCloudAction('saveYarn', { item: savedYarn });
+      }
 
-        this.saveLocal('tung_projects', this.projects);
-        this.renderGallery(); this.updateStats(); this.closeModal('modalAddProject');
-        this.tempColors.project = []; this.tempUploadedImage.project = null; this.renderTempColorDots('project'); document.getElementById('editProjectId').value = '';
-        if (savedProject) this.dispatchCloudAction('saveProject', { item: savedProject });
-      }
+      saveNewPattern() {
+        const name = document.getElementById('patternNameInput').value || '新織譜';
+        const url = document.getElementById('patternUrlInput').value || '';
+        const tags = Array.from(document.querySelectorAll('#patternTypeSelectGroup .tag-btn.text-white')).map(b => b.innerText);
+        const image = this.tempUploadedImage.pattern || fallbackSvg;
+        const newPattern = { id: 'p_' + Date.now(), name, tags: tags.length ? tags : ['小物'], date: relDate(0), url, image };
+        this.patterns.unshift(newPattern);
+        this.saveLocal('tung_patterns', this.patterns);
+        this.renderPatterns(); this.updateStats(); this.closeModal('modalAddPattern');
+        this.tempUploadedImage.pattern = null; this.showToast('織譜已典藏至織典');
+        this.dispatchCloudAction('savePattern', { item: newPattern });
+      }
 
-      renderAll() {
-        this.renderYarnCharts(); this.renderYarns(false); this.renderPatterns(); this.renderGallery(); this.updateStats();
-      }
-    }
+      saveProject() {
+        if (this.cropperState && this.cropperState.project && this.cropperState.project.img) {
+          this.exportCroppedImage('project');
+        }
 
-    function initStudioApp() {
-      if (window.gsap && window.Flip) gsap.registerPlugin(Flip);
-      if (!window.app || !(window.app instanceof AppController)) { window.app = new AppController(); window.app.init(); }
-    }
+        const editId = document.getElementById('editProjectId').value;
+        const title = document.getElementById('projectNameInput').value || '編織作品';
+        const startDate = toDisplayDate(document.getElementById('projectStartDate').value) || relDate(0);
+        
+        const isWip = document.getElementById('projectIsWip').checked;
+        const endDate = isWip ? '' : (toDisplayDate(document.getElementById('projectEndDate').value) || relDate(7));
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initStudioApp);
-    else initStudioApp();
+        const notes = document.getElementById('projectNotesInput').value || '';
+        const purpose = document.querySelector('input[name="projectPurpose"]:checked')?.value || '自用';
+        const category = document.getElementById('projectCategorySelect').value || '包包';
+        const yarnTag = document.getElementById('projectYarnTagSelect').value || '羊毛';
+        const colors = this.tempColors.project.length ? [...this.tempColors.project] : ['#9B83A4'];
+        const image = this.tempUploadedImage.project || fallbackSvg;
+        let savedProject = null;
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch((err) => { console.debug('SW:', err); }); });
-    }
+        if (editId) {
+          const prj = this.projects.find(p => p.id === editId);
+          if (prj) {
+            prj.title = title; prj.startDate = startDate; prj.endDate = endDate; prj.notes = notes; prj.purpose = purpose;
+            prj.categoryTags = [category]; prj.yarnTags = [yarnTag]; prj.colors = colors;
+            prj.image = image;
+            savedProject = prj;
+          }
+          this.showToast('作品已更新');
+        } else {
+          savedProject = {
+            id: 'prj_' + Date.now(), title, startDate, endDate, colors, yarnTags: [yarnTag], categoryTags: [category], purpose, notes, image
+          };
+          this.projects.unshift(savedProject);
+          this.showToast('作品已記錄');
+        }
+
+        this.saveLocal('tung_projects', this.projects);
+        this.renderGallery(); this.updateStats(); this.closeModal('modalAddProject');
+        this.tempColors.project = []; this.tempUploadedImage.project = null; this.renderTempColorDots('project'); document.getElementById('editProjectId').value = '';
+        if (savedProject) this.dispatchCloudAction('saveProject', { item: savedProject });
+      }
+
+      renderAll() {
+        this.renderYarnCharts(); this.renderYarns(false); this.renderPatterns(); this.renderGallery(); this.updateStats();
+      }
+    }
+
+    function initStudioApp() {
+      if (window.gsap && window.Flip) gsap.registerPlugin(Flip);
+      if (!window.app || !(window.app instanceof AppController)) { window.app = new AppController(); window.app.init(); }
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initStudioApp);
+    else initStudioApp();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch((err) => { console.debug('SW:', err); }); });
+    }
