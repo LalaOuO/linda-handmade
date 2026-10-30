@@ -485,17 +485,16 @@
             </div>
           </div>
 
-          <!-- 2. 16 色莫蘭迪雙列選色盤 -->
+          <!-- 2. 16 色莫蘭迪雙列選色盤 (上下淺深對應) -->
           <div class="bg-white/60 p-3 rounded-2xl border border-morandi-100">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-serifTitle font-semibold text-morandi-800">主觀色調 <span class="text-[10px] font-normal text-morandi-400">(點擊色球可移除)</span></span>
+              <span class="text-xs font-serifTitle font-semibold text-morandi-800">主觀色調 <span class="text-[10px] font-normal text-morandi-400">(無字純色)</span></span>
             </div>
-            
             <!-- 已選顏色展示區 -->
             <div id="yarnSelectedColors" class="flex flex-wrap gap-2 min-h-[32px] p-1.5 bg-white rounded-xl border border-morandi-100/80 mb-3"></div>
             
-            <!-- 16 色按鈕網格 (由 JS 渲染) -->
-            <div id="yarn16ColorPalette" class="grid grid-cols-8 gap-y-2 gap-x-1 justify-items-center"></div>
+            <!-- 16 色按鈕網格 (改為 grid-flow-col 橫向排版，讓上下兩排對應) -->
+            <div id="yarn16ColorPalette" class="grid grid-rows-2 grid-cols-8 grid-flow-col gap-1.5 justify-items-center overflow-x-auto no-scrollbar pb-1"></div>
           </div>
 
           <!-- 3. 基本資訊 (品牌/名稱) -->
@@ -524,14 +523,13 @@
             </div>
           </div>
 
-          <!-- 5. 材質標籤 -->
+          <!-- 5. 材質標籤 (改為橫向滑動，防跑版) -->
           <div>
-            <span class="text-xs text-morandi-700">材質分類 <span class="text-[10px] text-morandi-400">(長按標籤可刪除)</span></span>
-            <div class="flex flex-wrap gap-1.5 mt-1.5" id="yarnTypeSelectGroup"></div>
-            <div class="flex gap-2 mt-2">
-              <input type="text" id="newCustomTagInput" placeholder="自訂新標籤..." class="flex-1 px-2.5 py-1 text-xs rounded-xl bg-white border border-morandi-200 focus:outline-none">
-              <button type="button" onclick="app.addGlobalTagFromInput('yarn')" class="px-3 py-1 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium active:scale-95 transition">+ 新增</button>
-            </div>
+            <span class="text-xs text-morandi-700">材質分類 <span class="text-[10px] text-morandi-400">(橫向滑動)</span></span>
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2" id="yarnTypeSelectGroup"></div>
+            <button type="button" onclick="app.promptNewYarnTag()" class="mt-1 px-3 py-1.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 font-medium active:scale-95 transition w-full border border-morandi-200 border-dashed">
+              + 新增自訂標籤
+            </button>
           </div>
 
           <!-- 6. 數量與存放地點 -->
@@ -565,6 +563,60 @@
         </div>
       </div>
     </div>
+
+
+    
+        <!-- ==================== 彈窗 5: 毛線詳情 (支援編輯與刪除) ==================== -->
+    <div id="modalYarnDetail" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="w-full max-w-[320px] bg-oat-50 rounded-[32px] overflow-hidden flex flex-col shadow-2xl" onclick="event.stopPropagation()">
+        <!-- 滿版圖片預覽 -->
+        <div class="w-full aspect-square bg-morandi-100 relative">
+          <img id="detailYarnImg" src="" class="w-full h-full object-cover" onerror="app.handleImgFallback(this)">
+          <button onclick="app.closeModal('modalYarnDetail')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-md active:scale-90 transition">✕</button>
+        </div>
+        <!-- 資訊區 -->
+        <div class="p-5 flex flex-col gap-3">
+          <div>
+            <div class="flex items-center space-x-2 mb-1">
+              <span id="detailYarnBrand" class="text-[10px] font-serifBrand text-morandi-400 tracking-wider uppercase"></span>
+              <span id="detailYarnLocation" class="text-[10px] text-morandi-500 bg-morandi-200/50 px-2 py-0.5 rounded-md font-sans"></span>
+            </div>
+            <h3 id="detailYarnName" class="text-lg font-serifTitle font-bold text-morandi-900"></h3>
+          </div>
+          
+          <div class="flex items-center justify-between py-2 border-y border-morandi-200/60">
+            <span class="text-xs text-morandi-600">庫存數量</span>
+            <span id="detailYarnQty" class="text-lg font-serifBrand font-bold text-morandi-800"></span>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <span class="text-[10px] text-morandi-500">色調與標籤</span>
+            <div class="flex items-center gap-2">
+              <div id="detailYarnColors" class="flex -space-x-1"></div>
+              <div id="detailYarnTags" class="flex flex-wrap gap-1"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5 mt-1">
+            <span class="text-[10px] text-morandi-500">進貨年月 / 備註</span>
+            <p id="detailYarnNotes" class="text-xs text-morandi-800 leading-relaxed"></p>
+          </div>
+
+          <!-- 編輯與刪除按鈕 -->
+          <div class="grid grid-cols-2 gap-3 mt-4 pt-2">
+            <button onclick="app.editCurrentYarn()" class="py-2.5 rounded-xl bg-morandi-600 text-white text-xs font-bold shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5">
+              <i class="ph ph-pencil-simple"></i> 編輯
+            </button>
+            <button onclick="app.deleteCurrentYarn()" class="py-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5 hover:bg-rose-100">
+              <i class="ph ph-trash"></i> 刪除
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    
 
          
 
