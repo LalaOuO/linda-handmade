@@ -60,9 +60,12 @@
     
     <header class="px-5 pt-3.5 pb-2.5 flex items-center justify-between z-30 shrink-0 bg-oat-50/95 backdrop-blur-md border-b border-morandi-100/80 sticky top-0">
       <div class="flex items-center space-x-2">
-        <button id="navBackBtn" onclick="app.goHome()" class="hidden mr-1 text-morandi-600 active:scale-90 transition p-1" title="返回首頁">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-        </button>
+       
+        <!-- 左上角改為單純的回首頁房子圖示 -->
+      <button id="navBackBtn" onclick="app.goHome()" class="hidden flex items-center justify-center w-8 h-8 rounded-full bg-white/90 border border-morandi-200/80 shadow-sm text-morandi-600 active:scale-90 transition">
+        <i class="ph ph-house text-lg"></i>
+      </button>
+        
         <h1 id="pageTitle" class="text-base font-serifTitle tracking-widest font-semibold text-morandi-900 flex"></h1>
       </div>
       
@@ -73,6 +76,13 @@
     </header>
 
     <main id="mainContainer" class="flex-1 relative overflow-hidden no-scrollbar">
+
+      <!-- 下拉重新整理指示器 -->
+      <div id="ptrContainer" class="absolute top-0 left-0 w-full flex justify-center z-50 pointer-events-none opacity-0 -translate-y-4">
+        <div id="ptrSpinner" class="w-8 h-8 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-morandi-200 flex items-center justify-center text-morandi-600">
+          <i class="ph ph-arrow-clockwise text-lg"></i>
+        </div>
+      </div>
       
       <!-- 1. 首頁 -->
       <section id="viewHome" class="view-section flex flex-col z-10 !p-0">
@@ -172,11 +182,7 @@
           </div>
         </div>
 
-        <!-- ★ 關鍵新增：雙軌無限捲動卡片牆 ★ -->
-        <div id="yarnInfiniteWall" class="infinite-wall-container">
-          <div class="infinite-wall-row" id="wallRowTop"></div>
-          <div class="infinite-wall-row" id="wallRowBottom"></div>
-        </div>
+        
 
         <!-- 第一層：相簿抽屜展示區 (滿版無白邊) -->
         <div id="yarnDrawerGrid" class="grid grid-cols-2 gap-3 pb-6"></div>
