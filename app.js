@@ -866,6 +866,11 @@ window.handleImgFallback = function(imgEl) {
       }
 
       navigate(viewName, direction = 0) {
+        // ★ 新增：若切換到四大功能頁，推入歷史紀錄，讓側滑/返回鍵知道上一層是首頁
+        if (viewName !== 'home' && this.currentView !== viewName) {
+          history.pushState({ view: viewName }, '');
+        }
+        
         if (this.currentView === viewName) return;
         const oldView = this.currentView;
         this.currentView = viewName;
