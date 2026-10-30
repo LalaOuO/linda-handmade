@@ -328,35 +328,7 @@
           </div>
         </div>
 
-        <div class="glass-panel p-3.5 rounded-3xl shadow-sm flex flex-col gap-3 border border-morandi-200/80">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-serifTitle font-bold text-morandi-900 tracking-wider">色彩與標籤檢索</span>
-            <button onclick="app.clearSearch()" class="text-morandi-500 hover:text-morandi-800 p-1" title="重置條件">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            </button>
-          </div>
-
-          <div class="relative py-0.5">
-            <div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1 px-1" id="searchColorPills"></div>
-          </div>
-
-          <div class="flex flex-col gap-1.5 pt-0.5">
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="searchYarnTagRow">
-              <span class="text-[10px] text-morandi-400 font-medium shrink-0">線材</span>
-            </div>
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="searchProjectTagRow">
-              <span class="text-[10px] text-morandi-400 font-medium shrink-0">種類</span>
-            </div>
-          </div>
-
-          <div class="border-t border-morandi-100 pt-2.5 mt-0.5">
-            <div class="flex bg-morandi-100/70 p-1 rounded-2xl mb-2">
-              <button onclick="app.switchSearchTab('yarns')" id="searchTabYarnsBtn" class="flex-1 py-1 text-xs font-bold rounded-xl bg-white text-morandi-800 shadow-sm transition">符合毛線 (<span id="searchYarnCount">0</span>)</button>
-              <button onclick="app.switchSearchTab('projects')" id="searchTabProjectsBtn" class="flex-1 py-1 text-xs font-medium rounded-xl text-morandi-600 transition">符合作品 (<span id="searchProjectCount">0</span>)</button>
-            </div>
-            <div id="searchDrawerContent" class="flex flex-col gap-2 max-h-48 overflow-y-auto no-scrollbar relative"></div>
-          </div>
-        </div>
+        
       </section>
     </main>
 
