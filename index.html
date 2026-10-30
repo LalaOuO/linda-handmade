@@ -759,6 +759,44 @@
       </div>
     </div>
 
+  <!-- 彈窗 7: 毛線庫存統計分析抽屜 (Bottom Sheet) -->
+    <div id="modalYarnStats" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="w-full sm:max-w-[390px] max-h-[85vh] bg-oat-50 rounded-t-[36px] sm:rounded-[36px] overflow-hidden flex flex-col shadow-2xl border border-morandi-200">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-morandi-100 bg-white/70">
+          <div class="flex items-center space-x-2">
+            <i class="ph ph-chart-pie-slice text-base text-morandi-600"></i>
+            <h3 class="text-sm font-serifTitle font-bold text-morandi-900">毛線庫存 · 統計分析</h3>
+          </div>
+          <button onclick="app.closeYarnStatsModal()" class="w-7 h-7 rounded-full bg-morandi-100 flex items-center justify-center text-morandi-600 hover:bg-morandi-200 transition">✕</button>
+        </div>
+        
+        <div class="p-5 overflow-y-auto no-scrollbar flex flex-col gap-4">
+          <div class="relative w-full rounded-2xl glass-panel p-4 shadow-sm border border-morandi-200/80">
+            <div class="flex items-center justify-between mb-3">
+              <span id="yarnChartTitle" class="text-xs font-serifTitle font-bold text-morandi-900">分佈佔比</span>
+              <div class="flex items-center space-x-1 bg-morandi-100/70 p-0.5 rounded-lg">
+                <button onclick="app.switchYarnChart('color')" id="chartTab_color" class="px-2.5 py-0.5 text-[10px] font-serifBrand rounded-md bg-morandi-600 text-white font-semibold transition">顏色</button>
+                <button onclick="app.switchYarnChart('tag')" id="chartTab_tag" class="px-2.5 py-0.5 text-[10px] font-serifBrand rounded-md text-morandi-700 transition">種類</button>
+              </div>
+            </div>
+            
+            <div id="yarnChartWrapper" class="flex items-center justify-between py-1">
+              <div class="w-28 h-28 relative shrink-0 flex items-center justify-center">
+                <svg id="yarnPieSvg" class="w-full h-full -rotate-90" viewBox="0 0 36 36"></svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span id="chartCenterNum" class="text-sm font-serifBrand font-bold text-morandi-900 leading-none">0</span>
+                  <span class="text-[8px] text-morandi-400 mt-0.5">總球數</span>
+                </div>
+              </div>
+              <div id="yarnChartLegend" class="flex-1 pl-3.5 flex flex-col gap-1.5 justify-center overflow-hidden"></div>
+            </div>
+          </div>
+          <p class="text-[10px] text-morandi-400 text-center font-serifBrand">統計數據依當前入櫃毛線動態計算</p>
+        </div>
+      </div>
+    </div>
+    
+
     <!-- 柔和輕量通知訊息 -->
     <div id="toastMessage" class="fixed bottom-7 left-1/2 -translate-x-1/2 bg-morandi-900/95 text-white text-xs px-4 py-2 rounded-full shadow-lg backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 z-50 font-serifTitle flex items-center space-x-2">
       <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
