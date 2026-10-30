@@ -887,6 +887,19 @@ window.handleImgFallback = function(imgEl) {
       }
 
       navigate(viewName, direction = 0) {
+
+        // ★ 如果目標是回首頁，直接交給精準清場的 goHome() 處理，不要走左右推移動畫
+        if (viewName === 'home') {
+          this.goHome();
+          return;
+        }
+
+        if (this.isNavigating || this.currentView === viewName) return;
+        this.isNavigating = true;
+        setTimeout(() => { this.isNavigating = false; }, 300);
+        
+
+        
         // ★ 核心修復：如果動畫正在執行，直接忽略重複的切頁請求，防止畫面閃爍
         if (this.isNavigating) return;
         if (this.currentView === viewName) return;
@@ -970,10 +983,45 @@ window.handleImgFallback = function(imgEl) {
       }
 
       goHome() {
-        this.navigate('home', -1);
-        history.replaceState({ view: 'home' }, '');
+        if (this.currentView === 'home') return;
+
+        // 1. 強制終止當前畫面上所有正在跑的 GSAP 切頁動畫，避免殘影疊加
+        if (window.gsap) {
+          gsap.killTweensOf('.view-section');
+          gsap.killTweensOf('#mainContainer');
+          gsap.set('.view-section', { clearProps: 'all' });
+        }
+
+        // 2. 將所有分頁一律強制隱藏
+        document.querySelectorAll('.view-section').forEach(el => {
+          el.classList.add('hidden');
+          el.classList.remove('active');
+        });
+
+        // 3. 唯獨乾淨顯示首頁，不使用左右滑動推移
+        const homeView = document.getElementById('viewHome');
+        if (homeView) {
+          homeView.classList.remove('hidden');
+          homeView.classList.add('active');
+          if (window.gsap) {
+            gsap.fromTo(homeView, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" });
+          }
+        }
+
+        // 4. 重置導航狀態與標題
+        this.currentView = 'home';
+        this.activeDrawerCategory = null;
+        this.renderInkText('pageTitle', "Linda's Handmade");
+
+        // 5. 隱藏左上角 Home 房子按鈕與 FAB
         const homeBtn = document.getElementById('navBackBtn');
         if (homeBtn) homeBtn.classList.add('hidden');
+        const fab = document.getElementById('globalFabContainer');
+        if (fab) fab.classList.add('hidden');
+
+        // 6. 底部導航按鈕高亮歸位
+        document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('text-morandi-800', 'font-bold'));
+        history.replaceState({ view: 'home' }, '');
       }
 
       handleGlobalFabClick() {
