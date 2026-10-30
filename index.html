@@ -571,7 +571,7 @@
       <div class="w-full max-w-[320px] bg-oat-50 rounded-[32px] overflow-hidden flex flex-col shadow-2xl" onclick="event.stopPropagation()">
         <!-- 滿版圖片預覽 -->
         <div class="w-full aspect-square bg-morandi-100 relative">
-          <img id="detailYarnImg" src="" class="w-full h-full object-cover" onerror="app.handleImgFallback(this)">
+          <img id="detailYarnImg" src="" class="w-full h-full object-cover" onerror="window.handleImgFallback(this)">
           <button onclick="app.closeModal('modalYarnDetail')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-md active:scale-90 transition">✕</button>
         </div>
         <!-- 資訊區 -->
