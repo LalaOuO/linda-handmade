@@ -901,6 +901,8 @@ window.handleImgFallback = function(imgEl) {
         // 3. 四大平行分頁切換時使用 replaceState 維持歷史紀錄乾淨
         history.replaceState({ view: viewName }, '');
 
+      }
+
         // ... 以下原本 navigate 的後續程式碼保持不變 ...
       
         if (this.currentView === viewName) return;
