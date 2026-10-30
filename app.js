@@ -176,6 +176,9 @@ window.handleImgFallback = function(imgEl) {
           this.initInteractiveCanvas('project');
 
           this.syncFromCloud(false);
+          this.initPullToRefresh();
+          this.initHistoryAndEdgeSwipe();
+          
         } catch (e) { 
           console.error(e); 
         }
@@ -736,6 +739,108 @@ window.handleImgFallback = function(imgEl) {
         }, { passive: true });
       }
 
+      initHistoryAndEdgeSwipe() {
+        window.addEventListener('popstate', (e) => {
+          const openModal = document.querySelector('.fixed.inset-0:not(.hidden)');
+          if (openModal) {
+            openModal.classList.add('hidden');
+            this.deactivateEyedropper?.('yarn');
+            this.deactivateEyedropper?.('project');
+            return;
+          }
+          if (this.currentView === 'yarns' && this.activeDrawerCategory) {
+            this.activeDrawerCategory = null;
+            this.renderInkText('pageTitle', '毛線手札');
+            this.renderYarns();
+            return;
+          }
+          if (this.currentView !== 'home') {
+            this.goHome();
+          }
+        });
+
+        let edgeStartX = 0, edgeStartY = 0;
+        window.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            edgeStartX = e.touches[0].clientX;
+            edgeStartY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+          if (e.changedTouches.length === 1) {
+            const diffX = e.changedTouches[0].clientX - edgeStartX;
+            const diffY = e.changedTouches[0].clientY - edgeStartY;
+            if (edgeStartX < 32 && diffX > 60 && Math.abs(diffY) < 40) {
+              history.back();
+            }
+          }
+        }, { passive: true });
+      }
+
+      initPullToRefresh() {
+        const main = document.getElementById('mainContainer');
+        const ptr = document.getElementById('ptrContainer');
+        const spinner = document.getElementById('ptrSpinner');
+        if (!main || !ptr || !spinner) return;
+
+        let startY = 0;
+        let isPulling = false;
+        let currentY = 0;
+
+        main.addEventListener('touchstart', (e) => {
+          if (main.scrollTop <= 0 && e.touches.length === 1) {
+            startY = e.touches[0].clientY;
+            isPulling = true;
+            ptr.classList.remove('opacity-0', 'ptr-spinning');
+          }
+        }, { passive: true });
+
+        main.addEventListener('touchmove', (e) => {
+          if (!isPulling) return;
+          const diff = e.touches[0].clientY - startY;
+
+          if (diff > 0) {
+            currentY = diff * 0.4;
+            if (currentY > 75) currentY = 75 + (currentY - 75) * 0.15;
+            
+            if (window.gsap) {
+              gsap.set(main, { y: currentY });
+              gsap.set(ptr, { y: currentY + 16, opacity: Math.min(1, currentY / 50) });
+              gsap.set(spinner, { rotation: currentY * 4 });
+            }
+            if (e.cancelable) e.preventDefault();
+          }
+        }, { passive: false });
+
+        main.addEventListener('touchend', () => {
+          if (!isPulling) return;
+          isPulling = false;
+
+          if (currentY > 60) {
+            ptr.classList.add('ptr-spinning');
+            if (window.gsap) {
+              gsap.to(main, { y: 55, duration: 0.3, ease: "power2.out" });
+              gsap.to(ptr, { y: 71, duration: 0.3, ease: "power2.out" });
+            }
+            
+            this.syncFromCloud(true);
+            setTimeout(() => {
+              if (window.gsap) {
+                gsap.to(main, { y: 0, duration: 0.4, ease: "power3.out", onComplete: () => gsap.set(main, {clearProps: "transform"}) });
+                gsap.to(ptr, { y: 0, opacity: 0, duration: 0.4, ease: "power3.out", onComplete: () => ptr.classList.add('opacity-0') });
+              }
+            }, 1200);
+          } else {
+            if (window.gsap) {
+              gsap.to(main, { y: 0, duration: 0.3, ease: "power3.out", onComplete: () => gsap.set(main, {clearProps: "transform"}) });
+              gsap.to(ptr, { y: 0, opacity: 0, duration: 0.3, ease: "power3.out", onComplete: () => ptr.classList.add('opacity-0') });
+            }
+          }
+          currentY = 0;
+        }, { passive: true });
+      }
+
       showToast(text) {
         const toast = document.getElementById('toastMessage');
         const toastText = document.getElementById('toastText');
@@ -1219,6 +1324,7 @@ window.handleImgFallback = function(imgEl) {
 
       // 開啟指定抽屜
       openYarnDrawer(category) {
+        history.pushState({ drawer: category }, '');
         this.activeDrawerCategory = category;
         this.renderYarns(true);
       }
@@ -1713,7 +1819,14 @@ window.handleImgFallback = function(imgEl) {
         container.innerHTML = (this.tempColors[type] || []).map(c => `<button type="button" onclick="app.removeColorDot('${type}', '${c}')" class="w-6 h-6 rounded-full border border-black/15 shadow-inner flex items-center justify-center relative group active:scale-90 transition" style="background-color: ${c}"><span class="opacity-0 group-hover:opacity-100 text-[9px] text-white bg-black/60 rounded-full w-full h-full flex items-center justify-center">✕</span></button>`).join('');
       }
 
-      openModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); }
+      
+
+      openModal(id) {
+        history.pushState({ modal: id }, '');
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
+      }
+      
       closeModal(id) {
         const el = document.getElementById(id); if (el) el.classList.add('hidden');
         this.deactivateEyedropper('yarn');
