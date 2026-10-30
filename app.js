@@ -740,7 +740,8 @@ window.handleImgFallback = function(imgEl) {
       }
 
       initHistoryAndEdgeSwipe() {
-        window.addEventListener('popstate', (e) => {
+       window.addEventListener('popstate', (e) => {
+          // 1. 若有打開的彈窗，優先關閉彈窗
           const openModal = document.querySelector('.fixed.inset-0:not(.hidden)');
           if (openModal) {
             openModal.classList.add('hidden');
@@ -748,12 +749,16 @@ window.handleImgFallback = function(imgEl) {
             this.deactivateEyedropper?.('project');
             return;
           }
+
+          // 2. 若在毛線抽屜內部，先退回毛線抽屜總覽
           if (this.currentView === 'yarns' && this.activeDrawerCategory) {
             this.activeDrawerCategory = null;
             this.renderInkText('pageTitle', '毛線手札');
             this.renderYarns();
             return;
           }
+
+          // 3. 若在四大功能分頁（毛線/織典/藝廊/時光儀），一律平滑退回首頁
           if (this.currentView !== 'home') {
             this.goHome();
           }
