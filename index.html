@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+
+  <!-- 在 index.html 的 <head> 確保這兩行 preconnect 存在於最上方 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- 如果是使用 Dancing Script 或外部字型，加上 display=block 避免預設字體穿幫 -->
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&display=block" rel="stylesheet">
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Linda's Handmade · 手作毛線手札</title>
@@ -23,11 +31,8 @@
   <!-- Phosphor Icons (圖示庫) -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-  <!-- Google Fonts: 補回首頁 Linda 招牌專用的 Dancing Script 手寫字體 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
-
+ 
+  
   <!-- Tailwind 擴充配置（保留在 head 中，確保樣式渲染前載入） -->
   <script>
     tailwind.config = {
