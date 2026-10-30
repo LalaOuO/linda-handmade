@@ -886,7 +886,7 @@ window.handleImgFallback = function(imgEl) {
           el.innerHTML = text.split('').map((char, i) => `<span class="ink-char" style="animation-delay: ${i * 0.22}s">${char === ' ' ? '&nbsp;' : char}</span>`).join('');
           if (elId === 'pageTitle') this.lastRenderedTitle = text;
         }
-      }
+     
 
       navigate(viewName, direction = 0) {
         // 1. 如果目標是回首頁，交給 goHome 處理
