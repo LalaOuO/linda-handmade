@@ -242,3 +242,76 @@
       box-shadow: 0 0 0 3px rgba(255,255,255,0.9), 0 0 12px rgba(155, 131, 164, 0.8) !important;
       transform: scale(1.1);
     }
+
+
+
+/* 1. Brasilia Delight Script 字體宣告與備援 */
+@font-face {
+  font-family: 'Brasilia Delight Script';
+  src: url('./fonts/BrasiliaDelightScript.woff2') format('woff2'),
+       url('./fonts/BrasiliaDelightScript.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-brasilia {
+  font-family: 'Brasilia Delight Script', 'Dancing Script', cursive !important;
+}
+
+/* 2. Linda 簽名外框（啟用 3D 景深視角） */
+#homeBrandSign {
+  perspective: 1000px;
+  cursor: pointer;
+  display: inline-flex;
+  user-select: none;
+}
+
+/* 每個單字的獨立 3D 空間與自然白色陰影（帶莫蘭迪深紫底色，柔和不刺眼） */
+.coin-char {
+  display: inline-block;
+  color: #FFFFFF;
+  text-shadow: 0 4px 12px rgba(52, 38, 59, 0.45), 0 1px 3px rgba(0, 0, 0, 0.2);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* 3. 硬幣翻轉動畫：Y 軸轉 2 圈 (720deg) + 向上跳躍並二次回彈 */
+@keyframes coin-flip {
+  0% {
+    transform: translateY(0) rotateY(0deg) scale(1);
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  28% {
+    /* 向上跳起並翻轉一圈 */
+    transform: translateY(-24px) rotateY(360deg) scale(1.12);
+    animation-timing-function: ease-in;
+  }
+  58% {
+    /* 落地完成第二圈 */
+    transform: translateY(0) rotateY(720deg) scale(1);
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  75% {
+    /* 地面輕快小彈跳 */
+    transform: translateY(-7px) rotateY(720deg) scale(1.04);
+    animation-timing-function: ease-in;
+  }
+  88% {
+    transform: translateY(0) rotateY(720deg) scale(1);
+    animation-timing-function: ease-out;
+  }
+  94% {
+    transform: translateY(-2px) rotateY(720deg) scale(1.01);
+  }
+  100% {
+    transform: translateY(0) rotateY(720deg) scale(1);
+  }
+}
+
+.is-flipping .coin-char {
+  animation: coin-flip 1.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /* 依字元順序延遲 0.14 秒 */
+  animation-delay: calc(var(--char-index) * 0.14s);
+}
+
