@@ -806,7 +806,7 @@
           }
         }
 
-        if (viewName === 'chronometer') { this.animateChronometerEntrance(); this.renderCalendar(); this.executeSmartSearch(); }
+        if (viewName === 'chronometer') { this.animateChronometerEntrance(); this.renderCalendar(); }
         else if (viewName === 'gallery') this.renderGallery();
         else if (viewName === 'yarns') { this.renderYarnCharts(); this.renderYarns(false); }
         else if (viewName === 'library') this.renderPatterns();
@@ -1486,40 +1486,6 @@
 
       
 
-      selectSearchColor(hex) {
-        if (this.selectedSearchColors.has(hex)) this.selectedSearchColors.delete(hex);
-        else this.selectedSearchColors.add(hex);
-        document.querySelectorAll('.dock-item').forEach(btn => {
-          const color = btn.getAttribute('data-color'); const check = btn.querySelector('.check-mark');
-          if (this.selectedSearchColors.has(color)) { btn.classList.add('color-active-glow'); if (check) check.classList.remove('hidden'); }
-          else { btn.classList.remove('color-active-glow'); if (check) check.classList.add('hidden'); }
-        });
-        this.executeSmartSearch();
-      }
-
-     
-
-      toggleSearchYarnTag(tag, btn) {
-        if (this.selectedYarnTags.has(tag)) { this.selectedYarnTags.delete(tag); btn.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0'; }
-        else { this.selectedYarnTags.add(tag); btn.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-600 text-white font-bold transition shrink-0'; }
-        this.executeSmartSearch();
-      }
-
-      toggleSearchProjectTag(tag, btn) {
-        if (this.selectedProjectTags.has(tag)) { this.selectedProjectTags.delete(tag); btn.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0'; }
-        else { this.selectedProjectTags.add(tag); btn.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-600 text-white font-bold transition shrink-0'; }
-        this.executeSmartSearch();
-      }
-     
-     
-      executeSmartSearch() {
-        const hasColors = this.selectedSearchColors.size > 0; const hasYarnTags = this.selectedYarnTags.size > 0; const hasProjTags = this.selectedProjectTags.size > 0;
-        this.filteredYarns = this.yarns.filter(y => { const matchColor = hasColors ? Array.from(this.selectedSearchColors).some(selectedHex => (y.colors || []).some(c => isSimilarFamilyColor(c, selectedHex))) : true; const matchYarnTag = hasYarnTags ? Array.from(this.selectedYarnTags).some(t => (y.tags || []).includes(t)) : true; return matchColor && matchYarnTag; });
-        this.filteredProjects = this.projects.filter(p => { const matchColor = hasColors ? Array.from(this.selectedSearchColors).some(selectedHex => (p.colors || []).some(c => isSimilarFamilyColor(c, selectedHex))) : true; const matchYarnTag = hasYarnTags ? Array.from(this.selectedYarnTags).some(t => (p.yarnTags || []).includes(t)) : true; const matchProjTag = hasProjTags ? Array.from(this.selectedProjectTags).some(t => (p.categoryTags || []).includes(t)) : true; return matchColor && matchYarnTag && matchProjTag; });
-        const yCount = document.getElementById('searchYarnCount'); if (yCount) yCount.innerText = this.filteredYarns.length;
-        const pCount = document.getElementById('searchProjectCount'); if (pCount) pCount.innerText = this.filteredProjects.length;
-        this.renderSearchDrawerResults();
-      }
 
       renderSearchDrawerResults() {
         const container = document.getElementById('searchDrawerContent'); if (!container) return; let htmlStr = '';
