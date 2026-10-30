@@ -14,15 +14,15 @@ export const pikminPalette = [
   { id: 'c_white', color: '#EBE7DF', name: '燕麥白' }
 ];
 
-export const morandi16 = [
-  { id: 'c_pink', color: '#D8A7B1', name: '粉紅' }, { id: 'c_red', color: '#C28B88', name: '紅' },
-  { id: 'c_orange', color: '#D4A373', name: '橙' }, { id: 'c_brown', color: '#A68A6D', name: '咖啡' },
-  { id: 'c_beige', color: '#E3D5CA', name: '米黃' }, { id: 'c_yellow', color: '#E8D3A2', name: '黃' },
-  { id: 'c_white', color: '#F8F9FA', name: '白' }, { id: 'c_offwhite', color: '#EBE7DF', name: '米白' },
-  { id: 'c_lgreen', color: '#A3B19B', name: '淺綠' }, { id: 'c_dgreen', color: '#6B7A65', name: '墨綠' },
-  { id: 'c_lblue', color: '#9BB1C2', name: '淺藍' }, { id: 'c_dblue', color: '#5B6A7D', name: '深藍' },
-  { id: 'c_lpurple', color: '#C7B7CA', name: '淺紫' }, { id: 'c_dpurple', color: '#8A738F', name: '深紫' },
-  { id: 'c_gray', color: '#9CA3AF', name: '灰' }, { id: 'c_black', color: '#4B5563', name: '黑' }
+const morandi16 = [
+  { id: 'c_pink', color: '#D8A7B1' }, { id: 'c_red', color: '#C28B88' },      // 粉 / 紅
+  { id: 'c_orange', color: '#D4A373' }, { id: 'c_brown', color: '#A68A6D' },  // 橘 / 咖
+  { id: 'c_beige', color: '#E3D5CA' }, { id: 'c_yellow', color: '#E8D3A2' }, // 米 / 黃
+  { id: 'c_white', color: '#F8F9FA' }, { id: 'c_offwhite', color: '#EBE7DF' },// 白 / 米白
+  { id: 'c_lgreen', color: '#A3B19B' }, { id: 'c_dgreen', color: '#6B7A65' },// 淺綠 / 墨綠
+  { id: 'c_lblue', color: '#9BB1C2' }, { id: 'c_dblue', color: '#5B6A7D' },  // 淺藍 / 深藍
+  { id: 'c_lpurple', color: '#C7B7CA' }, { id: 'c_dpurple', color: '#8A738F' },// 淺紫 / 深紫
+  { id: 'c_gray', color: '#9CA3AF' }, { id: 'c_black', color: '#4B5563' }    // 灰 / 黑
 ];
 
 export const defaultYarns = [
