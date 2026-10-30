@@ -1,6 +1,6 @@
 // app.js 開頭
-import { fallbackSvg, pikminPalette, morandi16, defaultYarns, defaultPatterns, defaultProjects } from 'data.js';
-import { relDate, toInputDate, toDisplayDate, getColorCategory, hslToHex } from 'utils.js';
+import { fallbackSvg, pikminPalette, morandi16, defaultYarns, defaultPatterns, defaultProjects } from './data.js';
+import { relDate, toInputDate, toDisplayDate, getColorCategory, hslToHex } from './utils.js';
 
 // 保留防破圖機制在全域 (因為 HTML 行內 onclick 會直接呼叫 window.xxx)
 window.handleImgFallback = function(imgEl) {
