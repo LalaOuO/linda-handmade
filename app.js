@@ -887,33 +887,21 @@ window.handleImgFallback = function(imgEl) {
       }
 
       navigate(viewName, direction = 0) {
-
-        // ★ 如果目標是回首頁，直接交給精準清場的 goHome() 處理，不要走左右推移動畫
+        // 1. 如果目標是回首頁，直接交給精準清場的 goHome() 處理，不走左右推移動畫
         if (viewName === 'home') {
           this.goHome();
           return;
         }
 
+        // 2. 如果正在切頁動畫中或已經在此分頁，直接忽略，防止畫面連點閃爍
         if (this.isNavigating || this.currentView === viewName) return;
         this.isNavigating = true;
         setTimeout(() => { this.isNavigating = false; }, 300);
-        
 
-        
-        // ★ 核心修復：如果動畫正在執行，直接忽略重複的切頁請求，防止畫面閃爍
-        if (this.isNavigating) return;
-        if (this.currentView === viewName) return;
+        // 3. 四大平行分頁切換時使用 replaceState 維持歷史紀錄乾淨
+        history.replaceState({ view: viewName }, '');
 
-        this.isNavigating = true;
-        setTimeout(() => { this.isNavigating = false; }, 280); // 動畫結束後解鎖
-
-        // 四大平行分頁切換時使用 replaceState
-        if (viewName !== 'home') {
-          history.replaceState({ view: viewName }, '');
-        } else {
-          history.replaceState({ view: 'home' }, '');
-        }
-
+        // ... 以下原本 navigate 的後續程式碼保持不變 ...
       
         if (this.currentView === viewName) return;
         const oldView = this.currentView;
