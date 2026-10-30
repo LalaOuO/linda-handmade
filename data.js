@@ -1,4 +1,3 @@
-// data.js
 import { relDate } from './utils.js';
 
 export const fallbackSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><rect width='400' height='400' fill='%23E4DAE8'/><circle cx='200' cy='200' r='65' fill='%23CFBFD5' opacity='0.5'/><text x='50%25' y='52%25' font-family='sans-serif' font-size='14' fill='%23675271' text-anchor='middle'>Linda Handmade</text></svg>";
@@ -14,6 +13,7 @@ export const pikminPalette = [
   { id: 'c_white', color: '#EBE7DF', name: '燕麥白' }
 ];
 
+// 確保這裡有 export const morandi16，這樣 app.js 才抓得到！
 export const morandi16 = [
   { id: 'c_pink', color: '#D8A7B1' }, { id: 'c_red', color: '#C28B88' },
   { id: 'c_orange', color: '#D4A373' }, { id: 'c_brown', color: '#A68A6D' },
