@@ -112,12 +112,7 @@
         this.galleryLayout = 'grid';
         this.gridColumns = 2;
         this.gallerySearchQuery = '';
-
-        this.selectedSearchColors = new Set();
-        this.selectedYarnTags = new Set();
-        this.selectedProjectTags = new Set();
-        this.searchDrawerTab = 'yarns';
-        
+         
         this.calendarDate = new Date();
         this.calendarDate.setDate(1);
 
@@ -154,8 +149,6 @@
           this.renderInkText('brandTitle', "LINDA'S HANDMADE");
           this.renderAll();
           this.initPikminFilterBar();
-          this.initSearchColors();
-          this.initDoubleRowTagSearch();
           this.renderYarnTagSelectionGroup();
           this.initKnittingRulerDrag();
           this.initGalleryPinchZoom();
@@ -902,7 +895,7 @@
           }
           input.value = '';
           this.showToast(`已新增標籤 #${tag}`);
-          this.initDoubleRowTagSearch();
+          
         }
       }
 
@@ -915,7 +908,7 @@
           this.saveLocal('tung_global_category_tags', this.globalCategoryTags);
         }
         this.showToast(`已新增分類 #${tag}`);
-        this.initDoubleRowTagSearch();
+        
         const options = type === 'yarn' ? this.globalYarnTags : this.globalCategoryTags;
         this.populateDropdown(dropdownId, options, tag);
       }
@@ -932,7 +925,7 @@
             this.renderPatternTagSelectionGroup();
           }
           this.showToast(`已刪除標籤 #${tag}`);
-          this.initDoubleRowTagSearch();
+          
         }
       }
 
@@ -1491,11 +1484,7 @@
         container.innerHTML = html;
       }
 
-      initSearchColors() {
-        const container = document.getElementById('searchColorPills'); if (!container) return;
-        const paletteColors = pikminPalette.filter(p => !p.isAll);
-        container.innerHTML = paletteColors.map(c => `<button onclick="app.selectSearchColor('${c.color}')" data-color="${c.color}" class="dock-item shrink-0 w-7 h-7 rounded-full border-2 border-white shadow-sm flex items-center justify-center transition active:scale-90 relative" style="background-color: ${c.color}"><span class="check-mark text-white text-[11px] font-bold hidden">✓</span></button>`).join('');
-      }
+      
 
       selectSearchColor(hex) {
         if (this.selectedSearchColors.has(hex)) this.selectedSearchColors.delete(hex);
@@ -1508,24 +1497,7 @@
         this.executeSmartSearch();
       }
 
-      initDoubleRowTagSearch() {
-        const row1 = document.getElementById('searchYarnTagRow');
-        if (row1) {
-          row1.innerHTML = '<span class="text-[10px] text-morandi-400 font-medium shrink-0">線材</span>';
-          this.globalYarnTags.forEach(t => {
-            const btn = document.createElement('button'); btn.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0'; btn.innerText = `#${t}`;
-            btn.onclick = () => this.toggleSearchYarnTag(t, btn); row1.appendChild(btn);
-          });
-        }
-        const row2 = document.getElementById('searchProjectTagRow');
-        if (row2) {
-          row2.innerHTML = '<span class="text-[10px] text-morandi-400 font-medium shrink-0">種類</span>';
-          this.globalCategoryTags.forEach(t => {
-            const btn = document.createElement('button'); btn.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0'; btn.innerText = `#${t}`;
-            btn.onclick = () => this.toggleSearchProjectTag(t, btn); row2.appendChild(btn);
-          });
-        }
-      }
+     
 
       toggleSearchYarnTag(tag, btn) {
         if (this.selectedYarnTags.has(tag)) { this.selectedYarnTags.delete(tag); btn.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0'; }
@@ -1538,27 +1510,8 @@
         else { this.selectedProjectTags.add(tag); btn.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-600 text-white font-bold transition shrink-0'; }
         this.executeSmartSearch();
       }
-
-      clearSearch() {
-        this.selectedSearchColors.clear(); this.selectedYarnTags.clear(); this.selectedProjectTags.clear();
-        document.querySelectorAll('.dock-item').forEach(b => { b.classList.remove('color-active-glow'); const check = b.querySelector('.check-mark'); if (check) check.classList.add('hidden'); });
-        document.querySelectorAll('.search-yarn-tag').forEach(b => b.className = 'search-yarn-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0');
-        document.querySelectorAll('.search-proj-tag').forEach(b => b.className = 'search-proj-tag px-2.5 py-0.5 text-xs rounded-xl bg-morandi-100 text-morandi-700 transition shrink-0');
-        this.executeSmartSearch(); this.showToast('已重置檢索條件');
-      }
-
-      switchSearchTab(tab) {
-        this.searchDrawerTab = tab; const btnYarns = document.getElementById('searchTabYarnsBtn'); const btnProjects = document.getElementById('searchTabProjectsBtn');
-        if (tab === 'yarns') {
-          if (btnYarns) btnYarns.className = 'flex-1 py-1 text-xs font-bold rounded-xl bg-white text-morandi-800 shadow-sm transition';
-          if (btnProjects) btnProjects.className = 'flex-1 py-1 text-xs font-medium rounded-xl text-morandi-600 transition';
-        } else {
-          if (btnProjects) btnProjects.className = 'flex-1 py-1 text-xs font-bold rounded-xl bg-white text-morandi-800 shadow-sm transition';
-          if (btnYarns) btnYarns.className = 'flex-1 py-1 text-xs font-medium rounded-xl text-morandi-600 transition';
-        }
-        this.renderSearchDrawerResults();
-      }
-
+     
+     
       executeSmartSearch() {
         const hasColors = this.selectedSearchColors.size > 0; const hasYarnTags = this.selectedYarnTags.size > 0; const hasProjTags = this.selectedProjectTags.size > 0;
         this.filteredYarns = this.yarns.filter(y => { const matchColor = hasColors ? Array.from(this.selectedSearchColors).some(selectedHex => (y.colors || []).some(c => isSimilarFamilyColor(c, selectedHex))) : true; const matchYarnTag = hasYarnTags ? Array.from(this.selectedYarnTags).some(t => (y.tags || []).includes(t)) : true; return matchColor && matchYarnTag; });
