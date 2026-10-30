@@ -84,9 +84,12 @@
           <img class="home-slide opacity-100 absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1u4LTKoTXwWbKNZTNnNzVJxCMKewV4HfD" alt="櫥窗1">
           <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1TjKCMXaEbWDH6TdZa7kvXqjjYo69q9mw" alt="櫥窗2">
           <img class="home-slide opacity-0 absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out" src="https://lh3.googleusercontent.com/d/1rF4LYr5580X4PlbBljPSZKn0beKRH-LK" alt="櫥窗3">
-          <div class="absolute bottom-3 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-xl shadow-sm border border-white/30 pointer-events-none z-10">
-            <span class="text-xs text-white font-serifTitle tracking-widest font-semibold drop-shadow-md">Linda</span>
-          </div>
+         <div class="absolute bottom-4 left-5 z-10">
+            <div id="homeBrandSign" onclick="app.triggerLindaCoinFlip()" class="font-brasilia text-[32px] tracking-wide active:scale-95 transition-transform">
+          <!-- 文字會由 app.js 自動拆分為獨立字母以觸發翻轉 -->
+              <span class="coin-char">Linda</span>
+            </div>
+            </div>
         </div>
 
         <div class="w-full max-w-[260px] mx-auto mt-6 flex flex-col space-y-3.5 pb-8 flex-1 justify-center">
