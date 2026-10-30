@@ -118,9 +118,7 @@ class AppController {
     const container = document.getElementById(`${type}16ColorPalette`);
     if (!container) return;
     container.innerHTML = morandi16.map(p => `
-      <button type="button" onclick="app.addColorDot('${type}', '${p.color}')" class="w-7 h-7 rounded-full border border-black/10 shadow-sm shrink-0 active:scale-90 transition hover:scale-110 flex items-center justify-center text-[9px] text-white/90 font-bold tracking-tighter" style="background-color: ${p.color}; text-shadow: 0px 1px 2px rgba(0,0,0,0.3)">
-        ${p.name}
-      </button>
+      <button type="button" onclick="app.addColorDot('${type}', '${p.color}')" class="w-6 h-6 rounded-full border border-black/10 shadow-sm shrink-0 active:scale-90 transition hover:scale-110" style="background-color: ${p.color};"></button>
     `).join('');
   }
 
@@ -951,19 +949,41 @@ class AppController {
     }
   }
 
-  renderYarnTagSelectionGroup(activeTags = []) {
+      renderYarnTagSelectionGroup(activeTags = []) {
     const container = document.getElementById('yarnTypeSelectGroup');
     if (!container) return;
     container.innerHTML = this.globalYarnTags.map(t => {
       const isActive = activeTags.includes(t);
       return `
-        <div class="relative inline-block tag-wrapper" onmousedown="app.startTagPress(event, 'yarn', '${t}')" onmouseup="app.cancelTagPress()" onmouseleave="app.cancelTagPress()" ontouchstart="app.startTagPress(event, 'yarn', '${t}')" ontouchend="app.cancelTagPress()" ontouchmove="app.cancelTagPress()">
-          <button type="button" onclick="app.toggleSelectTag(this)" class="tag-btn px-2.5 py-1 text-xs rounded-xl transition ${isActive ? 'bg-morandi-600 text-white font-bold' : 'bg-morandi-100 text-morandi-700'}">${t}</button>
-          <button type="button" class="delete-badge absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] flex items-center justify-center border-2 border-white z-10" onclick="event.stopPropagation(); app.deleteGlobalTag('yarn', '${t}')">✕</button>
+        <div class="relative shrink-0 tag-wrapper" onmousedown="app.startTagPress(event, 'yarn', '${t}')" onmouseup="app.cancelTagPress()" onmouseleave="app.cancelTagPress()" ontouchstart="app.startTagPress(event, 'yarn', '${t}')" ontouchend="app.cancelTagPress()" ontouchmove="app.cancelTagPress()">
+          <button type="button" onclick="app.toggleSelectTag(this)" class="tag-btn px-3 py-1.5 text-xs rounded-full transition whitespace-nowrap ${isActive ? 'bg-morandi-600 text-white font-bold' : 'bg-morandi-100 text-morandi-700'}">${t}</button>
+          <button type="button" class="delete-badge absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] flex items-center justify-center border-2 border-white z-10" onclick="event.stopPropagation(); app.deleteGlobalTag('yarn', '${t}')">✕</button>
         </div>
       `;
     }).join('');
   }
+
+  // 取代原本在 HTML 寫死的 input，改用統一的 Prompt
+  promptNewYarnTag() {
+    const tag = prompt('請輸入新的材質標籤：');
+    if (tag && tag.trim()) {
+      const trimmed = tag.trim();
+      if (!this.globalYarnTags.includes(trimmed)) {
+        this.globalYarnTags.push(trimmed);
+        this.saveLocal('tung_global_yarn_tags', this.globalYarnTags);
+        // 新增後自動選取該標籤
+        const currentActive = Array.from(document.querySelectorAll('#yarnTypeSelectGroup .tag-btn.text-white')).map(b => b.innerText);
+        currentActive.push(trimmed);
+        this.renderYarnTagSelectionGroup(currentActive);
+        this.showToast(`已新增標籤 #${trimmed}`);
+      } else {
+        this.showToast('標籤已存在');
+      }
+    }
+  }
+
+
+  
 
   renderPatternTagSelectionGroup(activeTags = []) {
     const container = document.getElementById('patternTypeSelectGroup');
@@ -1655,6 +1675,81 @@ class AppController {
     this.tempColors.yarn = []; this.tempUploadedImage.yarn = null; this.renderTempColorDots('yarn'); document.getElementById('editYarnId').value = '';
     if (savedYarn) this.dispatchCloudAction('saveYarn', { item: savedYarn });
   }
+
+    // 打開毛線詳情彈窗
+  openYarnDetail(id) {
+    this.activeYarnId = id; 
+    const y = this.yarns.find(item => item.id === id); 
+    if (!y) return;
+    
+    const imgEl = document.getElementById('detailYarnImg'); 
+    if (imgEl) imgEl.src = y.image;
+    
+    document.getElementById('detailYarnBrand').innerText = y.brand || '無品牌';
+    document.getElementById('detailYarnLocation').innerText = y.location || '未記錄';
+    document.getElementById('detailYarnName').innerText = y.name || '未命名線材';
+    document.getElementById('detailYarnQty').innerText = `${y.quantity} 球`;
+    
+    const colorsContainer = document.getElementById('detailYarnColors');
+    if (colorsContainer) {
+      colorsContainer.innerHTML = (y.colors || []).map(c => `<span class="w-4 h-4 rounded-full border border-black/10 inline-block shadow-inner" style="background-color: ${c}"></span>`).join('');
+    }
+    
+    const tagsContainer = document.getElementById('detailYarnTags');
+    if (tagsContainer) {
+      tagsContainer.innerHTML = (y.tags || []).map(t => `<span class="px-2 py-0.5 rounded-md bg-morandi-100 text-morandi-700 text-[10px]">#${t}</span>`).join('');
+    }
+
+    const notesStr = (y.acquiredDate ? `[${y.acquiredDate}] ` : '') + (y.notes || '尚無備註。');
+    document.getElementById('detailYarnNotes').innerText = notesStr;
+    
+    this.openModal('modalYarnDetail');
+  }
+
+  // 編輯當前毛線 (將資料倒回新增視窗)
+  editCurrentYarn() {
+    const y = this.yarns.find(item => item.id === this.activeYarnId); 
+    if (!y) return;
+    
+    this.closeModal('modalYarnDetail');
+    document.getElementById('modalYarnTitle').innerText = '修改毛線';
+    document.getElementById('editYarnId').value = y.id;
+    document.getElementById('yarnBrandInput').value = y.brand || '';
+    document.getElementById('yarnNameInput').value = y.name || '';
+    document.getElementById('yarnQuantityInput').value = y.quantity || 1;
+    document.getElementById('yarnAcquiredDateInput').value = y.acquiredDate || '';
+    document.getElementById('yarnNotesInput').value = y.notes || '';
+    
+    this.setDropdownValue('yarnLocationDropdown', y.location || '台南');
+    this.renderYarnTagSelectionGroup(y.tags || []);
+    
+    this.tempColors.yarn = [...(y.colors || [])];
+    this.renderTempColorDots('yarn');
+    
+    this.tempUploadedImage.yarn = y.image;
+    this.loadExistingImageToPreview('yarn', y.image);
+    
+    this.openModal('modalAddYarn');
+  }
+
+  // 刪除當前毛線
+  deleteCurrentYarn() {
+    if (confirm('確定要刪除這筆毛線庫存嗎？刪除後無法復原。')) {
+      const targetId = this.activeYarnId;
+      this.yarns = this.yarns.filter(y => y.id !== targetId);
+      this.saveLocal('tung_yarns', this.yarns);
+      
+      this.closeModal('modalYarnDetail');
+      this.renderYarns(false);
+      this.renderYarnCharts();
+      this.updateStats();
+      this.showToast('毛線已刪除');
+      this.dispatchCloudAction('deleteYarn', { id: targetId });
+    }
+  }
+
+
+  
 
   saveNewPattern() {
     const name = document.getElementById('patternNameInput').value || '新織譜';
